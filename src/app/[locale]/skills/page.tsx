@@ -4,6 +4,7 @@ import { SkillCard } from '@/components/skills/skill-card';
 import { TagFilter } from '@/components/skills/tag-filter';
 import { SearchBarClient } from '@/components/skills/search-bar';
 import { createPublicClient } from '@/lib/supabase/public';
+import { getPopularityScore } from '@/lib/popularity';
 import { Search } from 'lucide-react';
 
 export const revalidate = 60;
@@ -17,6 +18,7 @@ const SORT_COLUMNS: Record<string, string> = {
   stars: 'stars',
   good: 'good_count',
   installs: 'install_count',
+  views: 'view_count',
   recent: 'updated_at',
 };
 
@@ -40,11 +42,17 @@ export default async function AllSkillsPage({ params, searchParams }: AllSkillsP
   if (tag) {
     skillQuery = skillQuery.contains('tags', [tag]);
   }
-  const sortColumn = SORT_COLUMNS[sort] ?? 'stars';
-  skillQuery = skillQuery.order(sortColumn, { ascending: false }).limit(100);
+
+  // 'popular' uses composite score (client-side sort), others use DB sort
+  const isPopularSort = sort === 'popular';
+  if (!isPopularSort) {
+    const sortColumn = SORT_COLUMNS[sort] ?? 'stars';
+    skillQuery = skillQuery.order(sortColumn, { ascending: false });
+  }
+  skillQuery = skillQuery.limit(100);
 
   // Parallel fetch: categories + tags + filtered skills
-  const [{ data: categories }, { data: allSkillsForTags }, { data: skills }] = await Promise.all([
+  const [{ data: categories }, { data: allSkillsForTags }, { data: rawSkills }] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     supabase.from('skills').select('tags'),
     skillQuery,
@@ -52,6 +60,11 @@ export default async function AllSkillsPage({ params, searchParams }: AllSkillsP
   const allTags = [
     ...new Set((allSkillsForTags ?? []).flatMap((s) => s.tags ?? [])),
   ].sort();
+
+  // Apply client-side sort for composite popularity score
+  const skills = isPopularSort
+    ? [...(rawSkills ?? [])].sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
+    : rawSkills;
 
   return (
     <div className="space-y-6">

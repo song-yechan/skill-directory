@@ -14,7 +14,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   other: <Puzzle className="h-3.5 w-3.5" />,
 };
 
-const SORT_OPTIONS = ['stars', 'good', 'installs', 'recent'] as const;
+const SORT_OPTIONS = ['popular', 'stars', 'good', 'installs', 'views', 'recent'] as const;
 
 interface CategoryBarProps {
   readonly categories: ReadonlyArray<{
@@ -83,7 +83,7 @@ export function CategoryBar({ categories, locale }: CategoryBarProps) {
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt} value={opt}>
-            {t(`sort${opt.charAt(0).toUpperCase() + opt.slice(1)}` as 'sortStars' | 'sortGood' | 'sortInstalls' | 'sortRecent')}
+            {t(`sort${opt.charAt(0).toUpperCase() + opt.slice(1)}` as 'sortPopular' | 'sortStars' | 'sortGood' | 'sortInstalls' | 'sortViews' | 'sortRecent')}
           </option>
         ))}
       </select>

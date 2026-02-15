@@ -2,8 +2,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
+import { getPopularityScore } from '@/lib/popularity';
 import Link from 'next/link';
-import { TrendingUp, ThumbsUp, ArrowRight } from 'lucide-react';
+import { Flame, Eye, ArrowRight } from 'lucide-react';
 
 // ISR: revalidate every 60 seconds
 export const revalidate = 60;
@@ -18,66 +19,74 @@ export default async function HomePage({ params }: HomePageProps) {
   const t = await getTranslations('home');
   const supabase = createPublicClient();
 
-  // Parallel fetch: Trending (install_count) + Popular (good_count)
-  const [{ data: trending }, { data: popular }] = await Promise.all([
-    supabase.from('skills').select('*').order('install_count', { ascending: false }).limit(5),
-    supabase.from('skills').select('*').order('good_count', { ascending: false }).limit(5),
-  ]);
+  const { data: allSkills } = await supabase.from('skills').select('*');
+
+  const skills = allSkills ?? [];
+
+  // Popular: composite score (stars baseline + views + installs + votes)
+  const popular = [...skills]
+    .sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
+    .slice(0, 5);
+
+  // Most Viewed: pure view_count
+  const mostViewed = [...skills]
+    .sort((a, b) => b.view_count - a.view_count)
+    .slice(0, 5);
 
   return (
     <div className="space-y-12">
       <HeroSection />
 
-      {/* Trending (by installs) */}
+      {/* Popular (composite score) */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-[var(--accent)]" />
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">
-              {t('trendingTitle')}
-            </h2>
-          </div>
-          <Link
-            href={`/${locale}/skills?sort=installs`}
-            className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
-          >
-            {t('viewMore')}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        {trending && trending.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
-            {trending.map((skill) => (
-              <SkillCard key={skill.id} skill={skill} />
-            ))}
-          </div>
-        ) : null}
-      </section>
-
-      {/* Popular (by good_count) */}
-      <section>
-        <div className="mb-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-[var(--vote-good)]" />
+            <Flame className="h-5 w-5 text-[var(--accent)]" />
             <h2 className="text-lg font-bold text-[var(--text-primary)]">
               {t('popularTitle')}
             </h2>
           </div>
           <Link
-            href={`/${locale}/skills?sort=good`}
+            href={`/${locale}/skills?sort=popular`}
             className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
           >
             {t('viewMore')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        {popular && popular.length > 0 ? (
+        {popular.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
             {popular.map((skill) => (
               <SkillCard key={skill.id} skill={skill} />
             ))}
           </div>
-        ) : null}
+        )}
+      </section>
+
+      {/* Most Viewed */}
+      <section>
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-[var(--text-tertiary)]" />
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">
+              {t('mostViewedTitle')}
+            </h2>
+          </div>
+          <Link
+            href={`/${locale}/skills?sort=views`}
+            className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+          >
+            {t('viewMore')}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {mostViewed.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
+            {mostViewed.map((skill) => (
+              <SkillCard key={skill.id} skill={skill} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Browse All CTA */}
