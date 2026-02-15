@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { Star, ThumbsUp, Download } from 'lucide-react';
