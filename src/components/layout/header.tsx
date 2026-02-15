@@ -15,6 +15,7 @@ export function Header() {
     { href: `/${locale}`, label: t('home'), exact: true },
     { href: `/${locale}/skills`, label: t('allSkills'), exact: false },
     { href: `/${locale}/discover`, label: t('discover'), exact: false },
+    { href: `/${locale}/about`, label: t('about'), exact: false },
   ];
 
   return (
