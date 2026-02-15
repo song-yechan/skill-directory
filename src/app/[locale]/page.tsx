@@ -3,7 +3,7 @@ import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
 import Link from 'next/link';
-import { TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { TrendingUp, LayoutGrid, ArrowRight } from 'lucide-react';
 
 // ISR: revalidate every 60 seconds
 export const revalidate = 60;
@@ -17,10 +17,10 @@ export default async function HomePage({ params }: HomePageProps) {
   const t = await getTranslations('home');
   const supabase = createPublicClient();
 
-  // Parallel fetch for speed
-  const [{ data: trending }, { data: newest }] = await Promise.all([
+  // Parallel fetch: Trending (good_count) + All Skills (stars)
+  const [{ data: trending }, { data: topStars }] = await Promise.all([
     supabase.from('skills').select('*').order('good_count', { ascending: false }).limit(5),
-    supabase.from('skills').select('*').order('created_at', { ascending: false }).limit(5),
+    supabase.from('skills').select('*').order('stars', { ascending: false }).limit(5),
   ]);
 
   return (
@@ -53,26 +53,26 @@ export default async function HomePage({ params }: HomePageProps) {
         ) : null}
       </section>
 
-      {/* New Section */}
+      {/* All Skills (by GitHub Stars) */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-500" />
+            <LayoutGrid className="h-5 w-5 text-[var(--accent)]" />
             <h2 className="text-lg font-bold text-[var(--text-primary)]">
-              {t('newTitle')}
+              {t('allSkillsTitle')}
             </h2>
           </div>
           <Link
-            href={`/${locale}/discover?tab=new`}
+            href={`/${locale}/skills?sort=stars`}
             className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
           >
             {t('viewMore')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        {newest && newest.length > 0 ? (
+        {topStars && topStars.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
-            {newest.map((skill) => (
+            {topStars.map((skill) => (
               <SkillCard key={skill.id} skill={skill} />
             ))}
           </div>
