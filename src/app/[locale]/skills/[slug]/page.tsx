@@ -109,12 +109,14 @@ export default async function SkillPage({ params }: SkillPageProps) {
           )}
 
           {/* Usage guide */}
-          {skill.usage_guide && (
+          {(skill.usage_guide || skill.usage_guide_en) && (
             <section className="space-y-3">
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {t('howToUse')}
               </h2>
-              <MarkdownRenderer content={skill.usage_guide} />
+              <MarkdownRenderer content={locale === 'ko'
+                ? (skill.usage_guide ?? skill.usage_guide_en)
+                : (skill.usage_guide_en ?? skill.usage_guide)} />
             </section>
           )}
 

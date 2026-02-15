@@ -71,7 +71,8 @@ Generate a JSON object. Every string field must be a **plain string** (not array
   "description_ko": "string — same in Korean. ~해요/~이에요 체. 한자 절대 금지.",
   "summary_en": "string — max 60 chars, starts with verb",
   "summary_ko": "string — max 30자, 한자 금지",
-  "usage_guide": "string — markdown, following the EXACT template below",
+  "usage_guide": "string — markdown in KOREAN, following the EXACT template below",
+  "usage_guide_en": "string — markdown in ENGLISH, same structure as usage_guide but in English",
   "category": "string — one of: development, testing, devops, productivity, docs, other",
   "tags": ["3-5 lowercase kebab-case tags"]
 }
@@ -115,6 +116,25 @@ Generate a JSON object. Every string field must be a **plain string** (not array
 > 별도 슬래시 커맨드 없이 브라우저 자동화 요청 시 자동 활성화돼요.
 \`\`\`
 
+### usage_guide_en TEMPLATE (English version, same structure)
+
+\`\`\`markdown
+### How It Works
+
+{one-line flow with arrows} → {step} → {step} → {result}
+
+### Use Cases
+
+| Scenario | Example Prompt |
+|----------|---------------|
+| {specific scenario 1} | "{actual prompt example}" |
+| {specific scenario 2} | "{actual prompt example}" |
+| {specific scenario 3} | "{actual prompt example}" |
+| {specific scenario 4} | "{actual prompt example}" |
+
+> {one-line trigger explanation — mention slash command if available, otherwise say "auto-activated"}
+\`\`\`
+
 ### Quality Rules
 
 1. **description은 딱 2문장.** 길면 탈락.
@@ -139,6 +159,7 @@ interface EnrichedData {
   readonly summary_en: string;
   readonly summary_ko: string;
   readonly usage_guide: string;
+  readonly usage_guide_en: string;
   readonly category: string;
   readonly tags: readonly string[];
 }
@@ -155,7 +176,7 @@ async function callGemini(readme: string, currentName: string): Promise<Enriched
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 2000,
+            maxOutputTokens: 4000,
             responseMimeType: 'application/json',
           },
         }),
@@ -193,7 +214,7 @@ async function callGemini(readme: string, currentName: string): Promise<Enriched
 // ── Main ────────────────────────────────────────────────
 
 async function main() {
-  console.log('=== Skill Enrichment — Gemini 2.0 Flash ===\n');
+  console.log('=== Skill Enrichment — Gemini 2.5 Flash ===\n');
 
   // Only enrich skills that haven't been enriched yet (no Korean description)
   const { data: skills, error } = await supabase
@@ -250,6 +271,7 @@ async function main() {
         summary_en: ensureString(result.summary_en),
         summary_ko: ensureString(result.summary_ko),
         usage_guide: ensureString(result.usage_guide),
+        usage_guide_en: ensureString(result.usage_guide_en),
         install_guide: null,
         examples: null,
         tags,
