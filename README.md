@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Claude Skill Hub
+
+> Discover, vote, and install Claude Code skills — all in one place.
+
+**Live:** [skill-directory-livid.vercel.app](https://skill-directory-livid.vercel.app)
+
+## What is this?
+
+Claude Skill Hub automatically collects Claude Code skills from GitHub, enriches them with AI-generated descriptions (Korean/English), and lets the community vote and track installs. Think of it as an app store for Claude Code skills.
+
+### Key Features
+
+- **Auto-collection** — GitHub topic/keyword search finds Claude Code skill repos weekly
+- **AI enrichment** — Gemini 2.5 Flash generates structured descriptions, usage guides, and Korean translations
+- **Community signals** — Vote (good/bad), view count, install tracking
+- **Trending** — Weekly snapshot-based delta scoring surfaces rising skills
+- **Bilingual** — Full Korean/English support via next-intl
+- **Search & Filter** — By category, tags, sort (popular, trending, stars, recent)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) + React 19 |
+| Language | TypeScript 5 |
+| Database | Supabase (PostgreSQL) |
+| Styling | Tailwind CSS 4 |
+| i18n | next-intl (ko/en) |
+| AI | Gemini 2.5 Flash (enrichment) |
+| Hosting | Vercel (ICN region) |
+| CI/CD | GitHub Actions (weekly cron) |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone
+git clone https://github.com/song-yechan/skill-directory.git
+cd skill-directory
+
+# Install
+npm install
+
+# Environment variables
+cp .env.local.example .env.local
+# Fill in: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+#          SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY
+
+# Dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Script | Purpose |
+|--------|---------|
+| `npx tsx scripts/seed-skills.ts` | Collect skills from GitHub → Supabase |
+| `npx tsx scripts/enrich-skills.ts` | AI-enrich skills missing Korean descriptions |
+| `npx tsx scripts/refresh-snapshots.ts` | Snapshot current counts for trending delta |
+| `npx tsx scripts/migrate-snapshots.ts` | Initialize snapshot columns (one-time) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
 
-## Learn More
+```
+src/
+├── app/[locale]/
+│   ├── page.tsx              # Home (Hero + Trending + New)
+│   ├── skills/page.tsx       # All Skills (search/filter/sort)
+│   ├── skills/[slug]/page.tsx # Skill detail
+│   ├── discover/page.tsx     # Discover (New/Trending tabs)
+│   └── about/page.tsx        # About
+├── components/
+│   ├── layout/               # Header, Footer, LocaleSwitcher
+│   ├── skills/               # SkillCard, CategoryBar, VoteButton, etc.
+│   └── ui/                   # MarkdownRenderer
+├── lib/
+│   ├── supabase/             # public, server, client, admin
+│   └── popularity.ts         # Scoring algorithms
+└── i18n/                     # Routing + request config
 
-To learn more about Next.js, take a look at the following resources:
+scripts/                      # Seed, enrich, snapshot scripts
+.github/workflows/            # Weekly cron (seed + enrich)
+supabase/migrations/          # DB schema
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Data Pipeline
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+GitHub API → seed-skills.ts → Supabase → enrich-skills.ts → AI descriptions
+                                  ↓
+                         Weekly cron (GitHub Actions)
+                                  ↓
+                     refresh-snapshots.ts → Trending scores
+```
 
-## Deploy on Vercel
+### Popularity Score
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+score = stars × 0.01 + views × 1 + installs × 5 + good × 10 - bad × 10
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Trending Score (weekly delta)
+
+```
+trending = Δviews + Δinstalls × 5 + Δgood × 10
+```
+
+## License
+
+MIT
