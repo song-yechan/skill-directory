@@ -36,7 +36,8 @@ export default async function SkillPage({ params }: SkillPageProps) {
 
   if (!skill) notFound();
 
-  await supabase.rpc('increment_view', { p_skill_id: skill.id });
+  // Fire-and-forget: don't block page render for view tracking
+  supabase.rpc('increment_view', { p_skill_id: skill.id }).then();
 
   const { data: { user } } = await supabase.auth.getUser();
   let userVote: 'good' | 'bad' | null = null;
