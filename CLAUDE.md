@@ -50,9 +50,16 @@ Claude Code 스킬 AI-native 디렉토리. GitHub 자동 수집 + 커뮤니티 �
 ### i18n
 - 메시지: `messages/ko.json`, `messages/en.json`
 - 새 텍스트 추가 시 **반드시 ko/en 둘 다** 업데이트
-- 네임스페이스: `common`, `home`, `allSkills`, `discover`, `detail`, `about`
+- 네임스페이스: `common`, `home`, `allSkills`, `discover`, `detail`, `about`, `metadata`, `skill`
 - DB 필드 i18n: `description_ko/en`, `summary_ko/en`, `usage_guide/usage_guide_en`
 - 상세 페이지: locale에 따라 분기 + fallback (ko 없으면 en, en 없으면 ko)
+
+### SEO
+- **generateMetadata**: 홈, 스킬 목록, 스킬 상세 페이지에 적용
+- **sitemap.ts**: `app/sitemap.ts` — 전체 스킬 (ko/en) + 정적 페이지
+- **robots.ts**: `app/robots.ts` — 모든 크롤러 허용
+- **JSON-LD**: 스킬 상세 페이지에 `SoftwareApplication` 스키마
+- **generateStaticParams**: 인기 스킬 50개 사전 빌드 (ko/en)
 
 ## Performance Rules
 - 읽기 전용 페이지는 `createPublicClient()` + `export const revalidate = 60` 필수
@@ -69,6 +76,8 @@ Claude Code 스킬 AI-native 디렉토리. GitHub 자동 수집 + 커뮤니티 �
 ## Plans
 - **Phase 1 설계**: `docs/plans/2026-02-15-skill-directory-design.md` — 11 Task, 완료
 - **Phase 2 성장**: `docs/plans/2026-02-16-phase2-growth.md` — SEO, 마케팅, 커뮤니티, KPI
+  - A2 SEO 완료: generateMetadata, sitemap, robots.txt, JSON-LD, generateStaticParams
+  - 148개 스킬 enrichment 완료 (description_ko/en, usage_guide/en, summary, tags)
 
 ## Documentation Maintenance
 **매 작업 완료 시 이 파일을 업데이트하라:**
