@@ -1,6 +1,6 @@
 /**
  * Enrich skills with AI-generated structured descriptions.
- * Uses Google Gemini 2.0 Flash (free tier: 15 RPM, 1M tokens/day)
+ * Uses Google Gemini 2.5 Flash (free tier)
  *
  * Usage: npx tsx scripts/enrich-skills.ts
  * Requires GEMINI_API_KEY in .env.local
@@ -38,7 +38,7 @@ if (!GEMINI_KEY || GEMINI_KEY.includes('<')) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
 const CATEGORIES = ['development', 'testing', 'devops', 'productivity', 'docs', 'other'] as const;
 const MAX_RETRIES = 3;
 
