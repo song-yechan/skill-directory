@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -9,6 +9,8 @@ import {
   Star, Download, Eye, ExternalLink, ArrowLeft,
   Calendar, Tag, ChevronDown, BadgeCheck
 } from 'lucide-react';
+
+export const revalidate = 60;
 
 const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
   development: { ko: '개발', en: 'Development' },
@@ -27,7 +29,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('skill');
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data: skill } = await supabase
     .from('skills')
@@ -37,31 +39,19 @@ export default async function SkillPage({ params }: SkillPageProps) {
 
   if (!skill) notFound();
 
-  // Fire-and-forget: don't block page render for view tracking
+  // Fire-and-forget view tracking
   supabase.rpc('increment_view', { p_skill_id: skill.id }).then();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  let userVote: 'good' | 'bad' | null = null;
-
-  if (user) {
-    const { data: vote } = await supabase
-      .from('votes')
-      .select('vote_type')
-      .eq('user_id', user.id)
-      .eq('skill_id', skill.id)
-      .single();
-    userVote = (vote?.vote_type as 'good' | 'bad') ?? null;
-  }
 
   const description = locale === 'ko' ? skill.description_ko : skill.description_en;
   const categoryLabel = CATEGORY_LABELS[skill.category_id]?.[locale as 'ko' | 'en'] ?? skill.category_id;
   const installCommand = `claude skill install ${skill.slug}`;
+  const isOfficial = skill.github_owner === 'anthropics';
 
   return (
     <div className="mx-auto max-w-6xl">
       {/* Back navigation */}
       <Link
-        href={`/${locale}`}
+        href={`/${locale}/skills`}
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] transition-colors hover:text-[var(--accent)]"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -73,10 +63,18 @@ export default async function SkillPage({ params }: SkillPageProps) {
         <div className="min-w-0 space-y-8">
           {/* Header */}
           <div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
-              <Tag className="h-3 w-3" />
-              {categoryLabel}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
+                <Tag className="h-3 w-3" />
+                {categoryLabel}
+              </span>
+              {isOfficial && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-3 py-1 text-xs font-bold text-white">
+                  <BadgeCheck className="h-3 w-3" />
+                  Official
+                </span>
+              )}
+            </div>
 
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--text-primary)]">
               {skill.name}
@@ -165,8 +163,6 @@ export default async function SkillPage({ params }: SkillPageProps) {
               skillId={skill.id}
               goodCount={skill.good_count}
               badCount={skill.bad_count}
-              userVote={userVote}
-              isLoggedIn={!!user}
             />
           </div>
 
@@ -174,27 +170,13 @@ export default async function SkillPage({ params }: SkillPageProps) {
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
-                {skill.github_owner === 'anthropics' ? (
-                  <>
-                    <div className="flex items-center justify-center gap-1 text-[var(--accent)]">
-                      <BadgeCheck className="h-4 w-4" />
-                      <span className="text-sm font-bold text-[var(--text-primary)]">
-                        Official
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">Anthropic</p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-center gap-1 text-amber-500">
-                      <Star className="h-4 w-4" />
-                      <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
-                        {skill.stars.toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
-                  </>
-                )}
+                <div className="flex items-center justify-center gap-1 text-amber-500">
+                  <Star className="h-4 w-4" />
+                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                    {skill.stars.toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-[var(--accent)]">

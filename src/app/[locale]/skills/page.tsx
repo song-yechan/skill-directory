@@ -27,39 +27,31 @@ export default async function AllSkillsPage({ params, searchParams }: AllSkillsP
   const t = await getTranslations('allSkills');
   const supabase = createPublicClient();
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .order('sort_order');
-
-  // Collect all unique tags for the filter
-  const { data: allSkillsForTags } = await supabase
-    .from('skills')
-    .select('tags');
-  const allTags = [
-    ...new Set((allSkillsForTags ?? []).flatMap((s) => s.tags ?? [])),
-  ].sort();
-
+  // Build skill query with filters
   let skillQuery = supabase.from('skills').select('*');
-
   if (category && category !== 'all') {
     skillQuery = skillQuery.eq('category_id', category);
   }
-
   if (q) {
     skillQuery = skillQuery.or(
       `name.ilike.%${q}%,description_en.ilike.%${q}%,description_ko.ilike.%${q}%,summary_en.ilike.%${q}%,summary_ko.ilike.%${q}%`
     );
   }
-
   if (tag) {
     skillQuery = skillQuery.contains('tags', [tag]);
   }
-
   const sortColumn = SORT_COLUMNS[sort] ?? 'stars';
   skillQuery = skillQuery.order(sortColumn, { ascending: false }).limit(100);
 
-  const { data: skills } = await skillQuery;
+  // Parallel fetch: categories + tags + filtered skills
+  const [{ data: categories }, { data: allSkillsForTags }, { data: skills }] = await Promise.all([
+    supabase.from('categories').select('*').order('sort_order'),
+    supabase.from('skills').select('tags'),
+    skillQuery,
+  ]);
+  const allTags = [
+    ...new Set((allSkillsForTags ?? []).flatMap((s) => s.tags ?? [])),
+  ].sort();
 
   return (
     <div className="space-y-6">

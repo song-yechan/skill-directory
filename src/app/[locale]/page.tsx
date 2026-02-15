@@ -3,7 +3,7 @@ import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
 import Link from 'next/link';
-import { TrendingUp, LayoutGrid, ArrowRight } from 'lucide-react';
+import { TrendingUp, ThumbsUp, ArrowRight } from 'lucide-react';
 
 // ISR: revalidate every 60 seconds
 export const revalidate = 60;
@@ -18,17 +18,17 @@ export default async function HomePage({ params }: HomePageProps) {
   const t = await getTranslations('home');
   const supabase = createPublicClient();
 
-  // Parallel fetch: Trending (good_count) + All Skills (stars)
-  const [{ data: trending }, { data: topStars }] = await Promise.all([
+  // Parallel fetch: Trending (install_count) + Popular (good_count)
+  const [{ data: trending }, { data: popular }] = await Promise.all([
+    supabase.from('skills').select('*').order('install_count', { ascending: false }).limit(5),
     supabase.from('skills').select('*').order('good_count', { ascending: false }).limit(5),
-    supabase.from('skills').select('*').order('stars', { ascending: false }).limit(5),
   ]);
 
   return (
     <div className="space-y-12">
       <HeroSection />
 
-      {/* Trending Section */}
+      {/* Trending (by installs) */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export default async function HomePage({ params }: HomePageProps) {
             </h2>
           </div>
           <Link
-            href={`/${locale}/discover?tab=trending`}
+            href={`/${locale}/skills?sort=installs`}
             className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
           >
             {t('viewMore')}
@@ -54,26 +54,26 @@ export default async function HomePage({ params }: HomePageProps) {
         ) : null}
       </section>
 
-      {/* All Skills (by GitHub Stars) */}
+      {/* Popular (by good_count) */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <LayoutGrid className="h-5 w-5 text-[var(--accent)]" />
+            <ThumbsUp className="h-5 w-5 text-[var(--vote-good)]" />
             <h2 className="text-lg font-bold text-[var(--text-primary)]">
-              {t('allSkillsTitle')}
+              {t('popularTitle')}
             </h2>
           </div>
           <Link
-            href={`/${locale}/skills?sort=stars`}
+            href={`/${locale}/skills?sort=good`}
             className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
           >
             {t('viewMore')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        {topStars && topStars.length > 0 ? (
+        {popular && popular.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
-            {topStars.map((skill) => (
+            {popular.map((skill) => (
               <SkillCard key={skill.id} skill={skill} />
             ))}
           </div>

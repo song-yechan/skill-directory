@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -8,41 +8,69 @@ interface VoteButtonProps {
   readonly skillId: string;
   readonly goodCount: number;
   readonly badCount: number;
-  readonly userVote: 'good' | 'bad' | null;
-  readonly isLoggedIn: boolean;
 }
 
-export function VoteButton({
-  skillId,
-  goodCount,
-  badCount,
-  userVote: initialVote,
-  isLoggedIn
-}: VoteButtonProps) {
+const STORAGE_KEY = 'skill-votes';
+
+function getStoredVote(skillId: string): 'good' | 'bad' | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const votes = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+    return votes[skillId] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredVote(skillId: string, vote: 'good' | 'bad' | null) {
+  try {
+    const votes = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+    if (vote) {
+      votes[skillId] = vote;
+    } else {
+      delete votes[skillId];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(votes));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+export function VoteButton({ skillId, goodCount, badCount }: VoteButtonProps) {
   const t = useTranslations('skill');
-  const [vote, setVote] = useState(initialVote);
+  const [vote, setVote] = useState<'good' | 'bad' | null>(null);
   const [counts, setCounts] = useState({ good: goodCount, bad: badCount });
   const [isPending, startTransition] = useTransition();
 
-  const handleVote = (type: 'good' | 'bad') => {
-    if (!isLoggedIn) return;
+  useEffect(() => {
+    setVote(getStoredVote(skillId));
+  }, [skillId]);
 
+  const handleVote = (type: 'good' | 'bad') => {
     startTransition(async () => {
       if (vote === type) {
-        await fetch(`/api/skills/${skillId}/vote`, { method: 'DELETE' });
+        // Remove vote
+        await fetch(`/api/skills/${skillId}/vote`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vote_type: type }),
+        });
         setCounts((prev) => ({ ...prev, [type]: prev[type] - 1 }));
         setVote(null);
+        setStoredVote(skillId, null);
       } else {
+        // Add or change vote
         await fetch(`/api/skills/${skillId}/vote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ vote_type: type })
+          body: JSON.stringify({ vote_type: type, previous_vote: vote }),
         });
         setCounts((prev) => ({
           good: prev.good + (type === 'good' ? 1 : 0) - (vote === 'good' ? 1 : 0),
-          bad: prev.bad + (type === 'bad' ? 1 : 0) - (vote === 'bad' ? 1 : 0)
+          bad: prev.bad + (type === 'bad' ? 1 : 0) - (vote === 'bad' ? 1 : 0),
         }));
         setVote(type);
+        setStoredVote(skillId, type);
       }
     });
   };
@@ -55,7 +83,7 @@ export function VoteButton({
       <div className="flex items-center gap-2">
         <button
           onClick={() => handleVote('good')}
-          disabled={isPending || !isLoggedIn}
+          disabled={isPending}
           className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
             vote === 'good'
               ? 'bg-[var(--vote-good-bg)] text-[var(--vote-good)] ring-1 ring-[var(--vote-good)]'
@@ -68,7 +96,7 @@ export function VoteButton({
         </button>
         <button
           onClick={() => handleVote('bad')}
-          disabled={isPending || !isLoggedIn}
+          disabled={isPending}
           className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
             vote === 'bad'
               ? 'bg-[var(--vote-bad-bg)] text-[var(--vote-bad)] ring-1 ring-[var(--vote-bad)]'
@@ -93,10 +121,6 @@ export function VoteButton({
             {goodPercent}%
           </span>
         </div>
-      )}
-
-      {!isLoggedIn && (
-        <p className="text-xs text-[var(--text-tertiary)]">{t('loginToVote')}</p>
       )}
     </div>
   );

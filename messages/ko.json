@@ -16,7 +16,7 @@
     "searchPlaceholder": "어떤 스킬을 찾고 있나요?",
     "suggestedTags": "이런 걸 찾고 있나요?",
     "trendingTitle": "Trending",
-    "allSkillsTitle": "All Skills",
+    "popularTitle": "커뮤니티 추천",
     "viewMore": "더 보기",
     "browseAll": "전체 스킬 보기",
     "browseAllDesc": "카테고리, 태그, 키워드로 원하는 스킬을 찾아보세요",
@@ -55,7 +55,6 @@
     "howToUse": "사용 방법",
     "examples": "예시",
     "viewReadme": "원본 README 보기",
-    "loginToVote": "투표하려면 로그인하세요",
     "accountTooNew": "계정 생성 30일 이후 투표 가능합니다"
   },
   "about": {

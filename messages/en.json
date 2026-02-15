@@ -16,7 +16,7 @@
     "searchPlaceholder": "What skill are you looking for?",
     "suggestedTags": "Looking for something like this?",
     "trendingTitle": "Trending",
-    "allSkillsTitle": "All Skills",
+    "popularTitle": "Community Picks",
     "viewMore": "View more",
     "browseAll": "Browse All Skills",
     "browseAllDesc": "Search by category, tag, or keyword to find the skill you need",
@@ -55,7 +55,6 @@
     "howToUse": "Usage",
     "examples": "Examples",
     "viewReadme": "View original README",
-    "loginToVote": "Sign in to vote",
     "accountTooNew": "Your account must be at least 30 days old to vote"
   },
   "about": {
