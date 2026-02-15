@@ -195,9 +195,11 @@ async function callGemini(readme: string, currentName: string): Promise<Enriched
 async function main() {
   console.log('=== Skill Enrichment — Gemini 2.0 Flash ===\n');
 
+  // Only enrich skills that haven't been enriched yet (no Korean description)
   const { data: skills, error } = await supabase
     .from('skills')
     .select('id, slug, name, readme_raw, description_en')
+    .is('description_ko', null)
     .order('stars', { ascending: false });
 
   if (error || !skills) {
