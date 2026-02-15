@@ -5,7 +5,8 @@
     "login": "Sign in with GitHub",
     "logout": "Sign out",
     "all": "All",
-    "about": "About"
+    "about": "About",
+    "discover": "Discover"
   },
   "home": {
     "title": "Discover Claude Code Skills",
@@ -67,6 +68,13 @@
     "ctaDesc": "Browse development, testing, DevOps, productivity, documentation, and more categories to find the skill you need.",
     "ctaBrowse": "Browse Skills",
     "ctaGithub": "Contribute on GitHub"
+  },
+  "discover": {
+    "title": "Discover",
+    "subtitle": "Check out newly added and trending skills",
+    "tabNew": "New",
+    "tabTrending": "Trending",
+    "empty": "No skills to show yet"
   },
   "categories": {
     "development": "Development",

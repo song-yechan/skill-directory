@@ -5,7 +5,8 @@
     "login": "GitHub로 로그인",
     "logout": "로그아웃",
     "all": "전체",
-    "about": "소개"
+    "about": "소개",
+    "discover": "Discover"
   },
   "home": {
     "title": "Claude Code 스킬을 발견하세요",
@@ -67,6 +68,13 @@
     "ctaDesc": "개발, 테스트, DevOps, 생산성, 문서화 등 다양한 카테고리에서 원하는 스킬을 발견하세요.",
     "ctaBrowse": "스킬 둘러보기",
     "ctaGithub": "GitHub에서 기여하기"
+  },
+  "discover": {
+    "title": "Discover",
+    "subtitle": "새로 추가되거나 주목받고 있는 스킬을 확인하세요",
+    "tabNew": "New",
+    "tabTrending": "Trending",
+    "empty": "아직 표시할 스킬이 없습니다"
   },
   "categories": {
     "development": "개발",

@@ -20,6 +20,12 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-3">
           <Link
+            href={`/${locale}/discover`}
+            className="hidden text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"
+          >
+            {t('discover')}
+          </Link>
+          <Link
             href={`/${locale}/about`}
             className="hidden text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"
           >

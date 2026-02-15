@@ -1,12 +1,10 @@
 /**
  * Enrich skills with AI-generated structured descriptions.
- * Uses Groq API (Llama 3.3 70B) to analyze README and generate:
- * - description_en/ko, summary_en/ko
- * - install_guide, usage_guide, examples
- * - category, tags
+ * Uses Google Gemini 2.0 Flash (free tier: 15 RPM, 1M tokens/day)
  *
  * Usage: npx tsx scripts/enrich-skills.ts
- * Requires GROQ_API_KEY in .env.local
+ * Requires GEMINI_API_KEY in .env.local
+ * Get free key: https://aistudio.google.com/apikey
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -23,24 +21,112 @@ for (const line of envContent.split('\n')) {
   }
 }
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY!;
+const GEMINI_KEY = process.env.GEMINI_API_KEY!;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!GROQ_API_KEY || GROQ_API_KEY.includes('<')) {
-  console.error('ERROR: GROQ_API_KEY is not set in .env.local');
-  console.error('Get a free key at https://console.groq.com/keys');
-  console.error('Add to .env.local: GROQ_API_KEY=gsk_...');
+if (!GEMINI_KEY || GEMINI_KEY.includes('<')) {
+  console.error('ERROR: GEMINI_API_KEY is not set in .env.local');
+  console.error('Get a free key at https://aistudio.google.com/apikey');
+  console.error('Add to .env.local: GEMINI_API_KEY=AIza...');
   process.exit(1);
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// llama-3.1-8b-instant has 131k TPM (vs 12k for 70B) — much faster for batch
-const GROQ_MODEL = 'llama-3.1-8b-instant';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const CATEGORIES = ['development', 'testing', 'devops', 'productivity', 'docs', 'other'];
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+const CATEGORIES = ['development', 'testing', 'devops', 'productivity', 'docs', 'other'] as const;
 const MAX_RETRIES = 3;
+
+// ── Prompt ──────────────────────────────────────────────
+
+function buildPrompt(readme: string, currentName: string): string {
+  return `You are writing concise, scannable documentation for a **Claude Code skill** directory.
+
+## Context
+- "Claude Code" is Anthropic's CLI-based AI coding agent (terminal tool)
+- A "skill" is a reusable instruction file (SKILL.md) that extends Claude Code's capabilities
+- Users browse this directory to quickly understand what a skill does and how to use it
+- Content must be SHORT and VISUAL — users won't read long text
+
+## Input
+Skill name: "${currentName}"
+
+README content:
+${readme.slice(0, 5000)}
+
+## Task
+Generate a JSON object. Every string field must be a **plain string** (not array, not object).
+
+### Output Schema
+
+\`\`\`json
+{
+  "name": "string — human-readable name, 2-4 words",
+  "description_en": "string — exactly 2 sentences. Sentence 1: what it does. Sentence 2: when/why you'd use it.",
+  "description_ko": "string — same in Korean. ~해요/~이에요 체. 한자 절대 금지.",
+  "summary_en": "string — max 60 chars, starts with verb",
+  "summary_ko": "string — max 30자, 한자 금지",
+  "usage_guide": "string — markdown, following the EXACT template below",
+  "category": "string — one of: development, testing, devops, productivity, docs, other",
+  "tags": ["3-5 lowercase kebab-case tags"]
+}
+\`\`\`
+
+### usage_guide TEMPLATE (follow this structure exactly)
+
+\`\`\`markdown
+### 동작 흐름
+
+{한 줄로 스킬의 동작 과정을 화살표로 표현} → {step} → {step} → {result}
+
+### 활용 시나리오
+
+| 상황 | 요청 예시 |
+|------|----------|
+| {구체적 상황 1} | "{실제 프롬프트 예시}" |
+| {구체적 상황 2} | "{실제 프롬프트 예시}" |
+| {구체적 상황 3} | "{실제 프롬프트 예시}" |
+| {구체적 상황 4} | "{실제 프롬프트 예시}" |
+
+> {트리거 방식 한 줄 설명 — 슬래시 커맨드가 있으면 명시, 없으면 "자동 활성화" 안내}
+\`\`\`
+
+### GOOD EXAMPLE (Playwright Skill)
+
+\`\`\`markdown
+### 동작 흐름
+
+자연어 요청 → Claude가 Playwright 코드 작성 → 브라우저 실행 → 결과 리포트
+
+### 활용 시나리오
+
+| 상황 | 요청 예시 |
+|------|----------|
+| 기능 검증 | "회원가입 폼이 정상 동작하는지 테스트해줘" |
+| 반응형 확인 | "대시보드를 모바일/태블릿/데스크톱으로 스크린샷 찍어줘" |
+| 링크 점검 | "전체 페이지에서 깨진 링크 찾아줘" |
+| 폼 테스트 | "결제 폼에 잘못된 값 넣었을 때 에러 메시지 확인해줘" |
+
+> 별도 슬래시 커맨드 없이 브라우저 자동화 요청 시 자동 활성화돼요.
+\`\`\`
+
+### Quality Rules
+
+1. **description은 딱 2문장.** 길면 탈락.
+2. **usage_guide는 위 템플릿 구조를 반드시 따를 것.** "동작 흐름" + "활용 시나리오" 테이블 + 트리거 안내.
+3. **활용 시나리오 테이블은 4행.** 각 행은 구체적이고 서로 다른 상황이어야 함.
+4. **"동작 흐름"은 화살표(→)로 연결된 한 줄.** 3-5단계.
+5. **한자(漢字) 절대 금지** — "文書" ❌ → "문서" ✅
+6. **기술 용어는 영어 그대로**: "Claude Code", "Playwright", "API", "MCP"
+7. **자연스러운 ~요 체**: ~해요, ~이에요, ~돼요
+8. **"this skill" 자기참조 금지** → 스킬 이름으로 언급
+9. **요청 예시는 실제 사용자가 Claude Code에 입력할 한국어 프롬프트**
+
+Return ONLY the JSON object. No markdown fences, no explanation.`;
+}
+
+// ── Gemini API call ─────────────────────────────────────
 
 interface EnrichedData {
   readonly name: string;
@@ -48,79 +134,50 @@ interface EnrichedData {
   readonly description_ko: string;
   readonly summary_en: string;
   readonly summary_ko: string;
-  readonly install_guide: string;
   readonly usage_guide: string;
-  readonly examples: string;
   readonly category: string;
   readonly tags: readonly string[];
 }
 
-async function callGroq(readme: string, currentName: string): Promise<EnrichedData | null> {
+async function callGemini(readme: string, currentName: string): Promise<EnrichedData | null> {
+  const prompt = buildPrompt(readme, currentName);
+
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const res = await fetch(GROQ_URL, {
+      const res = await fetch(GEMINI_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${GROQ_API_KEY}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: GROQ_MODEL,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a technical documentation expert. Always respond with valid JSON only, no markdown fences or extra text.'
-            },
-            {
-              role: 'user',
-              content: `Analyze this Claude Code skill README and generate structured documentation for beginners.
-
-Current skill name: "${currentName}"
-
-README:
-${readme.slice(0, 4000)}
-
-Return a JSON object with these fields:
-- name: human-readable skill name (keep "${currentName}" if already good)
-- description_en: 2-3 sentence description in English explaining what this skill does and why someone would use it
-- description_ko: same description translated to Korean (natural Korean, not machine translation)
-- summary_en: one-line summary in English (max 80 chars)
-- summary_ko: same summary in Korean
-- install_guide: clear step-by-step installation in markdown with actual commands
-- usage_guide: practical usage instructions in markdown with concrete examples
-- examples: 2-3 usage examples in markdown showing input/output
-- category: one of ${JSON.stringify(CATEGORIES)}
-- tags: 3-5 relevant lowercase kebab-case tags
-
-IMPORTANT: Return ONLY valid JSON.`
-            }
-          ],
-          temperature: 0.3,
-          max_tokens: 2500,
-          response_format: { type: 'json_object' },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 2000,
+            responseMimeType: 'application/json',
+          },
         }),
       });
 
       if (res.status === 429) {
-        const wait = Math.pow(2, attempt + 1) * 10_000; // 20s, 40s, 80s
-        process.stdout.write(` (rate limit, waiting ${wait / 1000}s)`);
+        const wait = Math.pow(2, attempt + 1) * 5_000;
+        process.stdout.write(` (rate limit, ${wait / 1000}s)`);
         await new Promise((r) => setTimeout(r, wait));
         continue;
       }
 
       if (!res.ok) {
         const errText = await res.text();
-        console.error(`  Groq API ${res.status}: ${errText.slice(0, 150)}`);
+        console.error(`  Gemini ${res.status}: ${errText.slice(0, 150)}`);
         return null;
       }
 
       const data = await res.json();
-      const text = data.choices?.[0]?.message?.content ?? '';
-      return JSON.parse(text);
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const cleaned = text.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
+      return JSON.parse(cleaned);
     } catch (err) {
-      console.error(`  AI extraction failed: ${(err as Error).message}`);
+      console.error(`  Failed: ${(err as Error).message}`);
       if (attempt < MAX_RETRIES - 1) {
-        await new Promise((r) => setTimeout(r, 5000));
+        await new Promise((r) => setTimeout(r, 3000));
         continue;
       }
       return null;
@@ -129,12 +186,14 @@ IMPORTANT: Return ONLY valid JSON.`
   return null;
 }
 
+// ── Main ────────────────────────────────────────────────
+
 async function main() {
-  console.log('=== Skill Enrichment with Groq (Llama 3.3 70B) ===\n');
+  console.log('=== Skill Enrichment — Gemini 2.0 Flash ===\n');
 
   const { data: skills, error } = await supabase
     .from('skills')
-    .select('id, slug, name, readme_raw, install_guide, usage_guide, examples, description_en')
+    .select('id, slug, name, readme_raw, description_en')
     .order('stars', { ascending: false });
 
   if (error || !skills) {
@@ -142,62 +201,66 @@ async function main() {
     process.exit(1);
   }
 
-  // Only enrich skills missing structured content
-  const needsEnrichment = skills.filter(
-    (s) => !s.usage_guide || !s.examples || !s.install_guide
-  );
-  console.log(`Total skills: ${skills.length}`);
-  console.log(`Need enrichment: ${needsEnrichment.length}\n`);
-  const skillsToProcess = needsEnrichment;
+  console.log(`Total skills to enrich: ${skills.length}\n`);
 
   let enriched = 0;
   let failed = 0;
 
-  for (const skill of skillsToProcess) {
+  for (const skill of skills) {
     const content = skill.readme_raw ?? skill.description_en ?? '';
     if (!content || content.length < 50) {
-      console.log(`SKIP: ${skill.slug} (no README content)`);
+      console.log(`SKIP: ${skill.slug} (no content)`);
       failed++;
       continue;
     }
 
-    process.stdout.write(`[${enriched + failed + 1}/${skillsToProcess.length}] ${skill.slug}...`);
+    process.stdout.write(`[${enriched + failed + 1}/${skills.length}] ${skill.slug}...`);
 
-    const result = await callGroq(content, skill.name);
+    const result = await callGemini(content, skill.name);
     if (!result) {
       failed++;
       console.log(' FAIL');
       continue;
     }
 
-    const category = CATEGORIES.includes(result.category) ? result.category : undefined;
+    const ensureString = (v: unknown): string | null => {
+      if (typeof v === 'string') return v;
+      if (Array.isArray(v)) return v.join('\n');
+      if (v && typeof v === 'object') return JSON.stringify(v, null, 2);
+      return null;
+    };
+
+    const category = CATEGORIES.includes(result.category as typeof CATEGORIES[number])
+      ? result.category
+      : undefined;
     const tags = Array.isArray(result.tags) ? [...result.tags] : [];
 
     const { error: updateError } = await supabase
       .from('skills')
       .update({
-        description_en: result.description_en ?? null,
-        description_ko: result.description_ko ?? null,
-        summary_en: result.summary_en ?? null,
-        summary_ko: result.summary_ko ?? null,
-        install_guide: result.install_guide ?? null,
-        usage_guide: result.usage_guide ?? null,
-        examples: result.examples ?? null,
+        name: ensureString(result.name) ?? skill.name,
+        description_en: ensureString(result.description_en),
+        description_ko: ensureString(result.description_ko),
+        summary_en: ensureString(result.summary_en),
+        summary_ko: ensureString(result.summary_ko),
+        usage_guide: ensureString(result.usage_guide),
+        install_guide: null,
+        examples: null,
         tags,
         ...(category ? { category_id: category } : {}),
       })
       .eq('id', skill.id);
 
     if (updateError) {
-      console.log(` DB ERROR: ${updateError.message}`);
+      console.log(` DB: ${updateError.message}`);
       failed++;
     } else {
       console.log(' OK');
       enriched++;
     }
 
-    // 8b-instant has 131k TPM — 1s delay is enough
-    await new Promise((r) => setTimeout(r, 1000));
+    // Gemini free tier: 15 RPM → 4s between requests
+    await new Promise((r) => setTimeout(r, 4000));
   }
 
   console.log(`\n=== Done ===`);
