@@ -5,12 +5,23 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
 import Link from 'next/link';
 import { Flame, TrendingUp, ArrowRight } from 'lucide-react';
+import type { Metadata } from 'next';
 
 // ISR: revalidate every 60 seconds
 export const revalidate = 60;
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations('metadata');
+
+  return {
+    title: t('homeTitle'),
+    description: t('homeDescription'),
+  };
 }
 
 export default async function HomePage({ params }: HomePageProps) {

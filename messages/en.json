@@ -10,6 +10,12 @@
     "about": "About",
     "discover": "Discover"
   },
+  "metadata": {
+    "homeTitle": "Claude Skill Hub — AI-Powered Skill Directory",
+    "homeDescription": "Search Claude Code skills in one place, verify quality through community ratings, and install with one click. A curated directory auto-collected from GitHub.",
+    "skillsTitle": "All Skills — Claude Skill Hub",
+    "skillsDescription": "Search and filter Claude Code skills by category, tag, or keyword. Discover skills for development, testing, DevOps, productivity, documentation, and more."
+  },
   "home": {
     "title": "Discover Claude Code Skills",
     "subtitle": "AI-powered, community-verified skill directory",

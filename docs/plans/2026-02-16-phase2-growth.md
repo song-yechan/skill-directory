@@ -24,7 +24,6 @@
 - [ ] 검색 자동완성 (debounce + Supabase textSearch)
 - [ ] 카테고리 아이콘 시각화 (현재 텍스트만)
 - [ ] 다크 모드
-- [ ] 스킬 비교 기능 (2-3개 선택 후 사이드바이사이드)
 
 ### A4. API & CLI
 - [ ] REST API 문서화 (OpenAPI/Swagger)

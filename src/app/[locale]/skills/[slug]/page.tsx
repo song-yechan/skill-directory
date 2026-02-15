@@ -9,6 +9,7 @@ import {
   Star, Download, Eye, ExternalLink, ArrowLeft,
   Calendar, Tag, ChevronDown, BadgeCheck
 } from 'lucide-react';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
 
@@ -23,6 +24,58 @@ const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
 
 interface SkillPageProps {
   params: Promise<{ locale: string; slug: string }>;
+}
+
+export async function generateMetadata({ params }: SkillPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const supabase = createPublicClient();
+
+  const { data: skill } = await supabase
+    .from('skills')
+    .select('name, description_ko, description_en')
+    .eq('slug', slug)
+    .single();
+
+  if (!skill) {
+    return {
+      title: 'Skill Not Found — Claude Skill Hub',
+    };
+  }
+
+  const description = locale === 'ko' ? skill.description_ko : skill.description_en;
+  const title = `${skill.name} — Claude Skill Hub`;
+  const url = `https://skill-directory-livid.vercel.app/${locale}/skills/${slug}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+    },
+  };
+}
+
+export async function generateStaticParams() {
+  const supabase = createPublicClient();
+
+  const { data: skills } = await supabase
+    .from('skills')
+    .select('slug')
+    .order('popularity_score', { ascending: false })
+    .limit(50);
+
+  if (!skills) return [];
+
+  const params = [];
+  for (const skill of skills) {
+    params.push({ locale: 'ko', slug: skill.slug });
+    params.push({ locale: 'en', slug: skill.slug });
+  }
+
+  return params;
 }
 
 export default async function SkillPage({ params }: SkillPageProps) {
@@ -47,8 +100,23 @@ export default async function SkillPage({ params }: SkillPageProps) {
   const installCommand = `claude skill install ${skill.slug}`;
   const isOfficial = skill.github_owner === 'anthropics';
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: skill.name,
+    description,
+    url: `https://skill-directory-livid.vercel.app/${locale}/skills/${slug}`,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Cross-platform',
+  };
+
   return (
-    <div className="mx-auto max-w-6xl">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="mx-auto max-w-6xl">
       {/* Back navigation */}
       <Link
         href={`/${locale}/skills`}
@@ -229,6 +297,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
           </a>
         </aside>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

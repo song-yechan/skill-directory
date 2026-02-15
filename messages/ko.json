@@ -10,6 +10,12 @@
     "about": "소개",
     "discover": "Discover"
   },
+  "metadata": {
+    "homeTitle": "Claude Skill Hub — AI 기반 스킬 디렉토리",
+    "homeDescription": "Claude Code 스킬을 한 곳에서 검색하고, 커뮤니티 평가로 품질을 확인하고, 원클릭으로 설치하세요. GitHub에서 자동 수집된 검증된 스킬 디렉토리.",
+    "skillsTitle": "전체 스킬 — Claude Skill Hub",
+    "skillsDescription": "카테고리, 태그, 키워드로 Claude Code 스킬을 검색하고 필터링하세요. 개발, 테스트, DevOps, 생산성, 문서화 등 다양한 스킬을 찾아보세요."
+  },
   "home": {
     "title": "Claude Code 스킬을 발견하세요",
     "subtitle": "AI가 추천하는 검증된 스킬 디렉토리",

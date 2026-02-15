@@ -6,12 +6,23 @@ import { SearchBarClient } from '@/components/skills/search-bar';
 import { createPublicClient } from '@/lib/supabase/public';
 import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
 import { Search } from 'lucide-react';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
 
 interface AllSkillsPageProps {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string; category?: string; sort?: string; tag?: string }>;
+}
+
+export async function generateMetadata({ params }: AllSkillsPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations('metadata');
+
+  return {
+    title: t('skillsTitle'),
+    description: t('skillsDescription'),
+  };
 }
 
 const SORT_COLUMNS: Record<string, string> = {
