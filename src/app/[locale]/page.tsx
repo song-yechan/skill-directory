@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
-import { SkillSearch } from '@/components/skills/skill-search';
-import { SkillFilters } from '@/components/skills/skill-filters';
+import { HeroSection } from '@/components/skills/hero-section';
+import { CategoryBar } from '@/components/skills/category-bar';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createClient } from '@/lib/supabase/server';
+import { Search } from 'lucide-react';
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -22,13 +23,11 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   const t = await getTranslations('home');
   const supabase = await createClient();
 
-  // 카테고리 조회
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
     .order('sort_order');
 
-  // 스킬 조회 (필터 + 정렬)
   let skillQuery = supabase.from('skills').select('*');
 
   if (category && category !== 'all') {
@@ -47,24 +46,29 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   const { data: skills } = await skillQuery;
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold">{t('title')}</h1>
-        <p className="mt-2 text-lg text-gray-600">{t('subtitle')}</p>
-      </div>
+    <div className="space-y-10">
+      <HeroSection />
 
-      <SkillSearch />
+      <CategoryBar categories={categories ?? []} locale={locale} />
 
-      <SkillFilters categories={categories ?? []} locale={locale} />
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {(skills ?? []).map((skill) => (
-          <SkillCard key={skill.id} skill={skill} />
-        ))}
-      </div>
-
-      {(!skills || skills.length === 0) && (
-        <p className="text-center text-gray-500">No skills found.</p>
+      {(skills && skills.length > 0) ? (
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {skills.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-4 py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)]">
+            <Search className="h-7 w-7 text-[var(--accent)]" />
+          </div>
+          <p className="text-lg font-medium text-[var(--text-secondary)]">
+            {q ? `"${q}"에 대한 스킬을 찾지 못했습니다` : '아직 등록된 스킬이 없습니다'}
+          </p>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            {q ? '다른 검색어를 시도하거나 카테고리를 둘러보세요' : '곧 스킬이 추가될 예정입니다'}
+          </p>
+        </div>
       )}
     </div>
   );

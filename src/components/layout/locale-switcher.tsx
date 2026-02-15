@@ -2,6 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
+import { Globe } from 'lucide-react';
 
 export function LocaleSwitcher() {
   const locale = useLocale();
@@ -16,8 +17,9 @@ export function LocaleSwitcher() {
   return (
     <button
       onClick={() => switchLocale(locale === 'ko' ? 'en' : 'ko')}
-      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+      className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--text-primary)]"
     >
+      <Globe className="h-3.5 w-3.5" />
       {locale === 'ko' ? 'EN' : '한국어'}
     </button>
   );

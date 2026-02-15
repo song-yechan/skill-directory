@@ -10,21 +10,24 @@ export function Header() {
   const locale = useLocale();
 
   return (
-    <header className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link href={`/${locale}`} className="text-xl font-bold text-gray-900">
-          {t('siteName')}
+    <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/80 backdrop-blur-lg">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        <Link href={`/${locale}`} className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]">
+            <span className="text-sm font-bold text-white">S</span>
+          </div>
+          <span className="text-base font-semibold tracking-tight">{t('siteName')}</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <nav className="flex items-center gap-3">
           <Link
             href={`/${locale}/about`}
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="hidden text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"
           >
             {t('about')}
           </Link>
           <LocaleSwitcher />
           <GitHubLoginButton />
-        </div>
+        </nav>
       </div>
     </header>
   );
