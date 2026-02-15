@@ -1,8 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { VoteButton } from '@/components/skills/vote-button';
-import { Star, Download, Eye, ExternalLink } from 'lucide-react';
+import { InstallCommand } from '@/components/skills/install-command';
+import {
+  Star, Download, Eye, ExternalLink, ArrowLeft,
+  Calendar, Tag, ChevronDown
+} from 'lucide-react';
+
+const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
+  development: { ko: '개발', en: 'Development' },
+  testing: { ko: '테스트 & QA', en: 'Testing & QA' },
+  devops: { ko: 'DevOps & 인프라', en: 'DevOps & Infra' },
+  productivity: { ko: '생산성', en: 'Productivity' },
+  docs: { ko: '문서화', en: 'Documentation' },
+  other: { ko: '기타', en: 'Other' },
+};
 
 interface SkillPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -21,10 +35,8 @@ export default async function SkillPage({ params }: SkillPageProps) {
 
   if (!skill) notFound();
 
-  // 뷰 카운트 증가
   await supabase.rpc('increment_view', { p_skill_id: skill.id });
 
-  // 현재 사용자 투표 확인
   const { data: { user } } = await supabase.auth.getUser();
   let userVote: 'good' | 'bad' | null = null;
 
@@ -39,87 +51,191 @@ export default async function SkillPage({ params }: SkillPageProps) {
   }
 
   const description = locale === 'ko' ? skill.description_ko : skill.description_en;
-  const installCommand = `npx skill-directory install ${skill.slug}`;
+  const categoryLabel = CATEGORY_LABELS[skill.category_id]?.[locale as 'ko' | 'en'] ?? skill.category_id;
+  const installCommand = `claude skill install ${skill.slug}`;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">{skill.name}</h1>
-        <p className="mt-2 text-lg text-gray-600">{description}</p>
+    <div className="mx-auto max-w-6xl">
+      {/* Back navigation */}
+      <Link
+        href={`/${locale}`}
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] transition-colors hover:text-[var(--accent)]"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {locale === 'ko' ? '스킬 목록' : 'Back to skills'}
+      </Link>
 
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-          <span className="flex items-center gap-1">
-            <Star className="h-4 w-4" /> {skill.stars} Stars
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye className="h-4 w-4" /> {skill.view_count} {t('views')}
-          </span>
-          <span className="flex items-center gap-1">
-            <Download className="h-4 w-4" /> {skill.install_count} {t('installs')}
-          </span>
+      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        {/* Main content */}
+        <div className="min-w-0 space-y-8">
+          {/* Header */}
+          <div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
+              <Tag className="h-3 w-3" />
+              {categoryLabel}
+            </span>
+
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+              {skill.name}
+            </h1>
+
+            <p className="mt-3 text-lg leading-relaxed text-[var(--text-secondary)]">
+              {description}
+            </p>
+
+            {skill.tags && skill.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {skill.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-[var(--border)] px-2.5 py-0.5 text-xs text-[var(--text-tertiary)]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Install guide */}
+          {skill.install_guide && (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                {t('howToInstall')}
+              </h2>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
+                {skill.install_guide}
+              </div>
+            </section>
+          )}
+
+          {/* Usage guide */}
+          {skill.usage_guide && (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                {t('howToUse')}
+              </h2>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
+                {skill.usage_guide}
+              </div>
+            </section>
+          )}
+
+          {/* Examples */}
+          {skill.examples && (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                {t('examples')}
+              </h2>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
+                {skill.examples}
+              </div>
+            </section>
+          )}
+
+          {/* README */}
+          {skill.readme_raw && (
+            <details className="group rounded-xl border border-[var(--border)] bg-[var(--bg-card)]">
+              <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-sm font-semibold text-[var(--text-primary)]">
+                {t('viewReadme')}
+                <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="border-t border-[var(--border)] px-5 py-4">
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {skill.readme_raw}
+                </div>
+              </div>
+            </details>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+          {/* Install card */}
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+              {t('installCommand')}
+            </h3>
+            <div className="mt-3">
+              <InstallCommand command={installCommand} />
+            </div>
+          </div>
+
+          {/* Vote card */}
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+            <h3 className="mb-3 text-sm font-semibold text-[var(--text-primary)]">
+              {locale === 'ko' ? '이 스킬이 유용한가요?' : 'Is this skill useful?'}
+            </h3>
+            <VoteButton
+              skillId={skill.id}
+              goodCount={skill.good_count}
+              badCount={skill.bad_count}
+              userVote={userVote}
+              isLoggedIn={!!user}
+            />
+          </div>
+
+          {/* Stats card */}
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-amber-500">
+                  <Star className="h-4 w-4" />
+                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                    {skill.stars.toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-[var(--accent)]">
+                  <Download className="h-4 w-4" />
+                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                    {skill.install_count.toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('installs')}</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
+                  <Eye className="h-4 w-4" />
+                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                    {skill.view_count.toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('views')}</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    {new Date(skill.updated_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('lastUpdated')}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* GitHub link */}
           <a
             href={skill.github_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-blue-600 hover:underline"
+            className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--text-primary)]"
           >
-            <ExternalLink className="h-4 w-4" /> GitHub
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+            {locale === 'ko' ? 'GitHub에서 보기' : 'View on GitHub'}
+            <ExternalLink className="h-3.5 w-3.5" />
           </a>
-        </div>
+        </aside>
       </div>
-
-      <VoteButton
-        skillId={skill.id}
-        goodCount={skill.good_count}
-        badCount={skill.bad_count}
-        userVote={userVote}
-        isLoggedIn={!!user}
-      />
-
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
-        <h2 className="text-lg font-semibold">{t('installCommand')}</h2>
-        <div className="mt-3">
-          <code className="block rounded-lg bg-gray-900 px-4 py-3 text-sm text-green-400">
-            {installCommand}
-          </code>
-        </div>
-      </div>
-
-      {skill.install_guide && (
-        <section>
-          <h2 className="text-xl font-semibold">{t('howToInstall')}</h2>
-          <div className="prose mt-3 max-w-none">
-            {skill.install_guide}
-          </div>
-        </section>
-      )}
-
-      {skill.usage_guide && (
-        <section>
-          <h2 className="text-xl font-semibold">{t('howToUse')}</h2>
-          <div className="prose mt-3 max-w-none">
-            {skill.usage_guide}
-          </div>
-        </section>
-      )}
-
-      {skill.examples && (
-        <section>
-          <h2 className="text-xl font-semibold">{t('examples')}</h2>
-          <div className="prose mt-3 max-w-none">
-            {skill.examples}
-          </div>
-        </section>
-      )}
-
-      <details className="rounded-xl border border-gray-200 p-5">
-        <summary className="cursor-pointer font-semibold">
-          {t('viewReadme')}
-        </summary>
-        <div className="prose mt-4 max-w-none whitespace-pre-wrap">
-          {skill.readme_raw}
-        </div>
-      </details>
     </div>
   );
 }
