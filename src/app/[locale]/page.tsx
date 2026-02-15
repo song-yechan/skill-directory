@@ -2,9 +2,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
-import { getPopularityScore } from '@/lib/popularity';
+import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
 import Link from 'next/link';
-import { Flame, Eye, ArrowRight } from 'lucide-react';
+import { Flame, TrendingUp, ArrowRight } from 'lucide-react';
 
 // ISR: revalidate every 60 seconds
 export const revalidate = 60;
@@ -28,9 +28,9 @@ export default async function HomePage({ params }: HomePageProps) {
     .sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
     .slice(0, 5);
 
-  // Most Viewed: pure view_count
-  const mostViewed = [...skills]
-    .sort((a, b) => b.view_count - a.view_count)
+  // Trending: weekly delta from snapshot
+  const trending = [...skills]
+    .sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
     .slice(0, 5);
 
   return (
@@ -63,26 +63,26 @@ export default async function HomePage({ params }: HomePageProps) {
         )}
       </section>
 
-      {/* Most Viewed */}
+      {/* Trending (weekly delta) */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-[var(--text-tertiary)]" />
+            <TrendingUp className="h-5 w-5 text-emerald-500" />
             <h2 className="text-lg font-bold text-[var(--text-primary)]">
-              {t('mostViewedTitle')}
+              {t('trendingTitle')}
             </h2>
           </div>
           <Link
-            href={`/${locale}/skills?sort=views`}
+            href={`/${locale}/skills?sort=trending`}
             className="flex items-center gap-1 text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
           >
             {t('viewMore')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        {mostViewed.length > 0 && (
+        {trending.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
-            {mostViewed.map((skill) => (
+            {trending.map((skill) => (
               <SkillCard key={skill.id} skill={skill} />
             ))}
           </div>

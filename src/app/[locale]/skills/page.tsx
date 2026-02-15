@@ -4,7 +4,7 @@ import { SkillCard } from '@/components/skills/skill-card';
 import { TagFilter } from '@/components/skills/tag-filter';
 import { SearchBarClient } from '@/components/skills/search-bar';
 import { createPublicClient } from '@/lib/supabase/public';
-import { getPopularityScore } from '@/lib/popularity';
+import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
 import { Search } from 'lucide-react';
 
 export const revalidate = 60;
@@ -43,9 +43,9 @@ export default async function AllSkillsPage({ params, searchParams }: AllSkillsP
     skillQuery = skillQuery.contains('tags', [tag]);
   }
 
-  // 'popular' uses composite score (client-side sort), others use DB sort
-  const isPopularSort = sort === 'popular';
-  if (!isPopularSort) {
+  // 'popular' and 'trending' use client-side sort, others use DB sort
+  const isClientSort = sort === 'popular' || sort === 'trending';
+  if (!isClientSort) {
     const sortColumn = SORT_COLUMNS[sort] ?? 'stars';
     skillQuery = skillQuery.order(sortColumn, { ascending: false });
   }
@@ -61,10 +61,12 @@ export default async function AllSkillsPage({ params, searchParams }: AllSkillsP
     ...new Set((allSkillsForTags ?? []).flatMap((s) => s.tags ?? [])),
   ].sort();
 
-  // Apply client-side sort for composite popularity score
-  const skills = isPopularSort
+  // Apply client-side sort for composite scores
+  const skills = sort === 'popular'
     ? [...(rawSkills ?? [])].sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
-    : rawSkills;
+    : sort === 'trending'
+      ? [...(rawSkills ?? [])].sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
+      : rawSkills;
 
   return (
     <div className="space-y-6">

@@ -14,3 +14,18 @@ export function getPopularityScore(skill: {
     skill.bad_count * 10
   );
 }
+
+/** Weekly trending score: delta from last snapshot */
+export function getTrendingScore(skill: {
+  view_count: number;
+  install_count: number;
+  good_count: number;
+  view_count_snapshot: number;
+  install_count_snapshot: number;
+  good_count_snapshot: number;
+}): number {
+  const viewDelta = skill.view_count - (skill.view_count_snapshot ?? 0);
+  const installDelta = skill.install_count - (skill.install_count_snapshot ?? 0);
+  const goodDelta = skill.good_count - (skill.good_count_snapshot ?? 0);
+  return viewDelta + installDelta * 5 + goodDelta * 10;
+}
