@@ -178,8 +178,8 @@ async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
   // Skip patterns - aggregators, unrelated repos
   const skipPatterns = ['awesome-', 'awesome_', 'curated', 'list-of'];
 
-  // Relevance filter: repo must have at least one of these keywords in name/description/topics
-  const RELEVANCE_KEYWORDS = ['claude', 'anthropic', 'skill', 'mcp', 'claude-code'];
+  // Strict filter: name or description must contain "claude"
+  const REQUIRED_KEYWORD = 'claude';
 
   for (const query of allQueries) {
     console.log(`  Searching: ${query}`);
@@ -196,9 +196,9 @@ async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
       const nameLower = item.name.toLowerCase();
       if (skipPatterns.some((p) => nameLower.startsWith(p))) continue;
 
-      // Relevance check: name, description, or topics must mention Claude/skill/MCP
-      const searchText = `${item.name} ${item.description ?? ''} ${(item.topics ?? []).join(' ')}`.toLowerCase();
-      if (!RELEVANCE_KEYWORDS.some((kw) => searchText.includes(kw))) continue;
+      // Strict: name or description must contain "claude"
+      const nameDesc = `${item.name} ${item.description ?? ''}`.toLowerCase();
+      if (!nameDesc.includes(REQUIRED_KEYWORD)) continue;
 
       repos.set(item.full_name, {
         fullName: item.full_name,
