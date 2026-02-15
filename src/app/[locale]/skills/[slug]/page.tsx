@@ -150,7 +150,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
               {t('installCommand')}
             </h3>
             <div className="mt-3">
-              <InstallCommand command={installCommand} />
+              <InstallCommand command={installCommand} skillId={skill.id} />
             </div>
           </div>
 
