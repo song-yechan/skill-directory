@@ -158,25 +158,28 @@ interface SearchResult {
 async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
   const repos = new Map<string, GitHubRepo>();
 
-  // 1. Topic-based search
+  // 1. Topic-based search (most reliable)
   const topicQueries = [
     'topic:claude-code-skills',
     'topic:claude-skills',
     'topic:claude-code-skill',
+    'topic:claude-code',
   ];
 
-  // 2. Keyword-based search (name/description contains these terms)
+  // 2. Keyword-based search (must combine "claude" with skill-related terms)
   const keywordQueries = [
-    'claude+skill',
-    'claude+code+skill',
-    'claude in:name,description',
-    'skill in:name,description',
+    'claude+skill in:name,description',
+    'claude+code+skill in:name,description',
+    'claude-code in:name',
   ];
 
   const allQueries = [...topicQueries, ...keywordQueries];
 
-  // Skip patterns - aggregators and unrelated repos
+  // Skip patterns - aggregators, unrelated repos
   const skipPatterns = ['awesome-', 'awesome_', 'curated', 'list-of'];
+
+  // Relevance filter: repo must have at least one of these keywords in name/description/topics
+  const RELEVANCE_KEYWORDS = ['claude', 'anthropic', 'skill', 'mcp', 'claude-code'];
 
   for (const query of allQueries) {
     console.log(`  Searching: ${query}`);
@@ -192,6 +195,10 @@ async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
       // Skip awesome lists and aggregators
       const nameLower = item.name.toLowerCase();
       if (skipPatterns.some((p) => nameLower.startsWith(p))) continue;
+
+      // Relevance check: name, description, or topics must mention Claude/skill/MCP
+      const searchText = `${item.name} ${item.description ?? ''} ${(item.topics ?? []).join(' ')}`.toLowerCase();
+      if (!RELEVANCE_KEYWORDS.some((kw) => searchText.includes(kw))) continue;
 
       repos.set(item.full_name, {
         fullName: item.full_name,
