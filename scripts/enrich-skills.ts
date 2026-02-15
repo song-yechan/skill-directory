@@ -11,14 +11,18 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Load .env.local
-const envPath = resolve(import.meta.dirname ?? __dirname, '..', '.env.local');
-const envContent = readFileSync(envPath, 'utf-8');
-for (const line of envContent.split('\n')) {
-  const match = line.match(/^([^#=]+)=(.*)$/);
-  if (match && !process.env[match[1].trim()]) {
-    process.env[match[1].trim()] = match[2].trim();
+// Load .env.local (skip in CI)
+try {
+  const envPath = resolve(import.meta.dirname ?? __dirname, '..', '.env.local');
+  const envContent = readFileSync(envPath, 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match && !process.env[match[1].trim()]) {
+      process.env[match[1].trim()] = match[2].trim();
+    }
   }
+} catch {
+  // CI environment — env vars provided externally
 }
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY!;

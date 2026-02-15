@@ -11,22 +11,34 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// ------- Get GH token BEFORE env loading (to avoid placeholder override) -------
+// ------- Get GH token (env var or gh CLI) -------
 
-const GH_TOKEN = execSync('gh auth token', { encoding: 'utf-8' }).trim();
+let GH_TOKEN = process.env.GITHUB_TOKEN ?? '';
+if (!GH_TOKEN) {
+  try {
+    GH_TOKEN = execSync('gh auth token', { encoding: 'utf-8' }).trim();
+  } catch {
+    console.error('No GITHUB_TOKEN env var and gh CLI not available');
+    process.exit(1);
+  }
+}
 
-// ------- Load .env.local -------
+// ------- Load .env.local (skip in CI) -------
 
-const envPath = resolve(import.meta.dirname ?? __dirname, '..', '.env.local');
-const envContent = readFileSync(envPath, 'utf-8');
-for (const line of envContent.split('\n')) {
-  const match = line.match(/^([^#=]+)=(.*)$/);
-  if (match) {
-    const [, key, value] = match;
-    if (!process.env[key.trim()]) {
-      process.env[key.trim()] = value.trim();
+try {
+  const envPath = resolve(import.meta.dirname ?? __dirname, '..', '.env.local');
+  const envContent = readFileSync(envPath, 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match) {
+      const [, key, value] = match;
+      if (!process.env[key.trim()]) {
+        process.env[key.trim()] = value.trim();
+      }
     }
   }
+} catch {
+  // CI environment — env vars provided externally
 }
 
 // ------- Config -------
@@ -140,17 +152,33 @@ interface SearchResult {
   }>;
 }
 
-async function collectFromTopics(): Promise<Map<string, GitHubRepo>> {
+async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
   const repos = new Map<string, GitHubRepo>();
-  const topics = ['claude-code-skills', 'claude-skills', 'claude-code-skill'];
 
-  // Skip patterns - these are aggregators, not individual skills
+  // 1. Topic-based search
+  const topicQueries = [
+    'topic:claude-code-skills',
+    'topic:claude-skills',
+    'topic:claude-code-skill',
+  ];
+
+  // 2. Keyword-based search (name/description contains these terms)
+  const keywordQueries = [
+    'claude+skill',
+    'claude+code+skill',
+    'claude in:name,description',
+    'skill in:name,description',
+  ];
+
+  const allQueries = [...topicQueries, ...keywordQueries];
+
+  // Skip patterns - aggregators and unrelated repos
   const skipPatterns = ['awesome-', 'awesome_', 'curated', 'list-of'];
 
-  for (const topic of topics) {
-    console.log(`  Searching topic: ${topic}`);
+  for (const query of allQueries) {
+    console.log(`  Searching: ${query}`);
     const data = await ghJson<SearchResult>(
-      `/search/repositories?q=topic:${topic}&sort=stars&per_page=80`
+      `/search/repositories?q=${encodeURIComponent(query)}&sort=stars&per_page=100`
     );
     if (!data) continue;
 
@@ -296,9 +324,9 @@ async function main() {
   console.log('=== Phase 1: Skill Seed ===\n');
 
   // 1. Collect from sources
-  console.log('[1/4] Collecting from GitHub topics...');
-  const topicRepos = await collectFromTopics();
-  console.log(`  Found ${topicRepos.size} repos from topics\n`);
+  console.log('[1/4] Collecting from GitHub (topics + keywords)...');
+  const topicRepos = await collectFromGitHub();
+  console.log(`  Found ${topicRepos.size} repos from GitHub search\n`);
 
   console.log('[2/4] Collecting Anthropic official skills...');
   const officialSkills = await collectAnthropicOfficial();
