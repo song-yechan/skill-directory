@@ -1,0 +1,52 @@
+{
+  "common": {
+    "siteName": "Claude Skill Directory",
+    "search": "Search",
+    "login": "Sign in with GitHub",
+    "logout": "Sign out",
+    "all": "All",
+    "about": "About"
+  },
+  "home": {
+    "title": "Discover Claude Code Skills",
+    "subtitle": "AI-powered, community-verified skill directory",
+    "searchPlaceholder": "What skill are you looking for?",
+    "suggestedTags": "Looking for something like this?",
+    "sortBy": "Sort by",
+    "sortStars": "Stars",
+    "sortGood": "Most recommended",
+    "sortInstalls": "Most installed",
+    "sortRecent": "Recently updated",
+    "category": "Category",
+    "language": "Language"
+  },
+  "skill": {
+    "install": "Install",
+    "installCommand": "Install command",
+    "copied": "Copied!",
+    "good": "Useful",
+    "bad": "Not useful",
+    "views": "Views",
+    "installs": "Installs",
+    "stars": "Stars",
+    "lastUpdated": "Last updated",
+    "howToInstall": "Installation",
+    "howToUse": "Usage",
+    "examples": "Examples",
+    "viewReadme": "View original README",
+    "loginToVote": "Sign in to vote",
+    "accountTooNew": "Your account must be at least 30 days old to vote"
+  },
+  "about": {
+    "title": "What is Claude Skill Directory?",
+    "description": "A directory that automatically collects Claude Code skills from GitHub, structures them with AI, and lets the community vote."
+  },
+  "categories": {
+    "development": "Development",
+    "testing": "Testing & QA",
+    "devops": "DevOps & Infra",
+    "productivity": "Productivity",
+    "docs": "Documentation",
+    "other": "Other"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "common": {
+    "siteName": "Claude Skill Directory",
+    "search": "검색",
+    "login": "GitHub로 로그인",
+    "logout": "로그아웃",
+    "all": "전체",
+    "about": "소개"
+  },
+  "home": {
+    "title": "Claude Code 스킬을 발견하세요",
+    "subtitle": "AI가 추천하는 검증된 스킬 디렉토리",
+    "searchPlaceholder": "어떤 스킬을 찾고 있나요?",
+    "suggestedTags": "이런 걸 찾고 있나요?",
+    "sortBy": "정렬",
+    "sortStars": "Stars",
+    "sortGood": "추천순",
+    "sortInstalls": "설치순",
+    "sortRecent": "최신순",
+    "category": "카테고리",
+    "language": "언어"
+  },
+  "skill": {
+    "install": "설치하기",
+    "installCommand": "설치 명령어",
+    "copied": "복사됨!",
+    "good": "유용해요",
+    "bad": "별로예요",
+    "views": "조회",
+    "installs": "설치",
+    "stars": "Stars",
+    "lastUpdated": "최근 업데이트",
+    "howToInstall": "설치 방법",
+    "howToUse": "사용 방법",
+    "examples": "예시",
+    "viewReadme": "원본 README 보기",
+    "loginToVote": "투표하려면 로그인하세요",
+    "accountTooNew": "계정 생성 30일 이후 투표 가능합니다"
+  },
+  "about": {
+    "title": "Claude Skill Directory란?",
+    "description": "GitHub에서 Claude Code 스킬을 자동 수집하고, AI로 구조화하여 보여주는 디렉토리입니다."
+  },
+  "categories": {
+    "development": "개발",
+    "testing": "테스트 & QA",
+    "devops": "DevOps & 인프라",
+    "productivity": "생산성",
+    "docs": "문서화",
+    "other": "기타"
+  }
+}
