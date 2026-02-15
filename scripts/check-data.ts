@@ -19,28 +19,15 @@ const sb = createClient(
 async function main() {
   const { data } = await sb
     .from('skills')
-    .select('slug, name, description_en, description_ko, summary_en, summary_ko, install_guide, usage_guide, examples, tags, category_id')
-    .eq('slug', 'lackeyjb-playwright-skill');
+    .select('name, stars, github_owner, good_count')
+    .order('stars', { ascending: false });
 
-  for (const s of data ?? []) {
-    console.log('name:', s.name);
-    console.log('category:', s.category_id);
-    console.log('tags:', JSON.stringify(s.tags));
-    console.log('\n--- description_en ---');
-    console.log(s.description_en);
-    console.log('\n--- description_ko ---');
-    console.log(s.description_ko);
-    console.log('\n--- summary_en ---');
-    console.log(s.summary_en);
-    console.log('\n--- summary_ko ---');
-    console.log(s.summary_ko);
-    console.log('\n--- install_guide ---');
-    console.log(s.install_guide);
-    console.log('\n--- usage_guide ---');
-    console.log(s.usage_guide);
-    console.log('\n--- examples ---');
-    console.log(s.examples);
-  }
+  console.table(data?.map(s => ({
+    name: s.name.slice(0, 30),
+    stars: s.stars,
+    good: s.good_count,
+    owner: s.github_owner,
+  })));
 }
 
 main().catch(console.error);
