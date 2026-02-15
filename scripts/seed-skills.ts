@@ -58,6 +58,7 @@ interface GitHubRepo {
   readonly description: string;
   readonly stargazersCount: number;
   readonly url: string;
+  readonly createdAt: string;
   readonly updatedAt: string;
   readonly topics: readonly string[];
 }
@@ -70,6 +71,7 @@ interface SkillRow {
   readonly stars: number;
   readonly forks: number;
   readonly last_github_update: string;
+  readonly github_created_at: string | null;
   readonly name: string;
   readonly description_en: string | null;
   readonly description_ko: string | null;
@@ -146,6 +148,7 @@ interface SearchResult {
     readonly owner: { readonly login: string };
     readonly stargazers_count: number;
     readonly description: string | null;
+    readonly created_at: string;
     readonly updated_at: string;
     readonly topics: readonly string[];
     readonly html_url: string;
@@ -197,6 +200,7 @@ async function collectFromGitHub(): Promise<Map<string, GitHubRepo>> {
         description: item.description ?? '',
         stargazersCount: item.stargazers_count,
         url: item.html_url,
+        createdAt: item.created_at,
         updatedAt: item.updated_at,
         topics: item.topics ?? [],
       });
@@ -228,6 +232,7 @@ async function collectAnthropicOfficial(): Promise<Map<string, GitHubRepo>> {
       description: `Official Anthropic skill: ${entry.name}`,
       stargazersCount: 70000,
       url: `https://github.com/anthropics/skills/tree/main/skills/${entry.name}`,
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       topics: ['official', 'anthropic'],
     });
@@ -304,6 +309,7 @@ function buildSkillRow(repo: GitHubRepo, readme: string | null, skillMd: string 
     stars: repo.stargazersCount,
     forks: 0,
     last_github_update: repo.updatedAt,
+    github_created_at: repo.createdAt,
     name,
     description_en: description,
     description_ko: null,
@@ -389,30 +395,60 @@ async function main() {
 
   console.log(`\n  Total skills to insert: ${skills.length}\n`);
 
-  // 3. Insert into Supabase
+  // 3. Insert / update into Supabase
+  // For existing skills: only update GitHub metadata (don't overwrite enriched data)
+  // For new skills: insert full row
   console.log('[4/4] Inserting into Supabase...');
 
   let inserted = 0;
+  let updated = 0;
   let failed = 0;
 
   for (const skill of skills) {
-    const { error } = await supabase
+    // Check if skill already exists
+    const { data: existing } = await supabase
       .from('skills')
-      .upsert(
-        { ...skill, tags: [...skill.tags] },
-        { onConflict: 'slug' }
-      );
+      .select('id, description_ko')
+      .eq('slug', skill.slug)
+      .single();
 
-    if (error) {
-      console.error(`  FAIL: ${skill.slug} — ${error.message}`);
-      failed++;
+    if (existing) {
+      // Update only metadata fields (preserve enriched content)
+      const { error } = await supabase
+        .from('skills')
+        .update({
+          stars: skill.stars,
+          last_github_update: skill.last_github_update,
+          github_created_at: skill.github_created_at,
+          github_url: skill.github_url,
+          readme_raw: skill.readme_raw,
+        })
+        .eq('id', existing.id);
+
+      if (error) {
+        console.error(`  FAIL (update): ${skill.slug} — ${error.message}`);
+        failed++;
+      } else {
+        updated++;
+      }
     } else {
-      inserted++;
+      // New skill: insert full row
+      const { error } = await supabase
+        .from('skills')
+        .insert({ ...skill, tags: [...skill.tags] });
+
+      if (error) {
+        console.error(`  FAIL (insert): ${skill.slug} — ${error.message}`);
+        failed++;
+      } else {
+        inserted++;
+      }
     }
   }
 
   console.log(`\n=== Done ===`);
-  console.log(`  Inserted: ${inserted}`);
+  console.log(`  New: ${inserted}`);
+  console.log(`  Updated: ${updated}`);
   console.log(`  Failed: ${failed}`);
   console.log(`  Total: ${skills.length}`);
 }

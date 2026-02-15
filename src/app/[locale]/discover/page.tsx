@@ -30,9 +30,9 @@ export default async function DiscoverPage({ params, searchParams }: DiscoverPag
     .order(sortColumn, { ascending: false })
     .limit(30);
 
-  // 7일 이내 추가된 스킬 판별
-  const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  // GitHub 레포 생성 14일 이내 = New
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
   return (
     <div className="space-y-8">
@@ -76,7 +76,9 @@ export default async function DiscoverPage({ params, searchParams }: DiscoverPag
       {skills && skills.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {skills.map((skill) => {
-            const isRecent = new Date(skill.created_at) > threeDaysAgo;
+            const isRecent = skill.github_created_at
+              ? new Date(skill.github_created_at) > fourteenDaysAgo
+              : false;
 
             return (
               <div key={skill.id} className="relative">
