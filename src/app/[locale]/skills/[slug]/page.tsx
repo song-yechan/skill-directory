@@ -4,9 +4,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { VoteButton } from '@/components/skills/vote-button';
 import { InstallCommand } from '@/components/skills/install-command';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import {
   Star, Download, Eye, ExternalLink, ArrowLeft,
-  Calendar, Tag, ChevronDown
+  Calendar, Tag, ChevronDown, BadgeCheck
 } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
@@ -103,9 +104,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {t('howToInstall')}
               </h2>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                {skill.install_guide}
-              </div>
+              <MarkdownRenderer content={skill.install_guide} />
             </section>
           )}
 
@@ -115,9 +114,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {t('howToUse')}
               </h2>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                {skill.usage_guide}
-              </div>
+              <MarkdownRenderer content={skill.usage_guide} />
             </section>
           )}
 
@@ -127,9 +124,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {t('examples')}
               </h2>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                {skill.examples}
-              </div>
+              <MarkdownRenderer content={skill.examples} />
             </section>
           )}
 
@@ -141,9 +136,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
                 <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-180" />
               </summary>
               <div className="border-t border-[var(--border)] px-5 py-4">
-                <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                  {skill.readme_raw}
-                </div>
+                <MarkdownRenderer content={skill.readme_raw} />
               </div>
             </details>
           )}
@@ -179,13 +172,27 @@ export default async function SkillPage({ params }: SkillPageProps) {
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-amber-500">
-                  <Star className="h-4 w-4" />
-                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
-                    {skill.stars.toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
+                {skill.github_owner === 'anthropics' ? (
+                  <>
+                    <div className="flex items-center justify-center gap-1 text-[var(--accent)]">
+                      <BadgeCheck className="h-4 w-4" />
+                      <span className="text-sm font-bold text-[var(--text-primary)]">
+                        Official
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">Anthropic</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-1 text-amber-500">
+                      <Star className="h-4 w-4" />
+                      <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                        {skill.stars.toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
+                  </>
+                )}
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-[var(--accent)]">

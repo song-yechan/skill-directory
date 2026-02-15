@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { Star, ThumbsUp, Download } from 'lucide-react';
+import { Star, ThumbsUp, Download, BadgeCheck } from 'lucide-react';
 
 interface SkillCardProps {
   readonly skill: {
@@ -17,6 +17,7 @@ interface SkillCardProps {
     readonly install_count: number;
     readonly category_id: string;
     readonly tags: readonly string[];
+    readonly github_owner: string;
   };
 }
 
@@ -66,10 +67,17 @@ export function SkillCard({ skill }: SkillCardProps) {
       )}
 
       <div className="mt-4 flex items-center gap-4 border-t border-dashed border-[var(--border)] pt-3 text-xs text-[var(--text-tertiary)]">
-        <span className="flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 text-amber-500" />
-          {skill.stars.toLocaleString()}
-        </span>
+        {skill.github_owner === 'anthropics' ? (
+          <span className="flex items-center gap-1 text-[var(--accent)]">
+            <BadgeCheck className="h-3.5 w-3.5" />
+            Official
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 text-amber-500" />
+            {skill.stars.toLocaleString()}
+          </span>
+        )}
         <span className="flex items-center gap-1">
           <ThumbsUp className="h-3.5 w-3.5 text-[var(--vote-good)]" />
           {skill.good_count.toLocaleString()}
