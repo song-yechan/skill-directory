@@ -19,10 +19,9 @@ export default async function HomePage({ params }: HomePageProps) {
   const supabase = createPublicClient();
 
   // Parallel fetch: Trending (good_count) + All Skills (stars)
-  // Exclude official (Anthropics) skills from rankings
   const [{ data: trending }, { data: topStars }] = await Promise.all([
-    supabase.from('skills').select('*').neq('github_owner', 'anthropics').order('good_count', { ascending: false }).limit(5),
-    supabase.from('skills').select('*').neq('github_owner', 'anthropics').order('stars', { ascending: false }).limit(5),
+    supabase.from('skills').select('*').order('good_count', { ascending: false }).limit(5),
+    supabase.from('skills').select('*').order('stars', { ascending: false }).limit(5),
   ]);
 
   return (
