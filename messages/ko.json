@@ -5,6 +5,8 @@
     "login": "GitHub로 로그인",
     "logout": "로그아웃",
     "all": "전체",
+    "home": "홈",
+    "allSkills": "All Skills",
     "about": "소개",
     "discover": "Discover"
   },
@@ -13,6 +15,11 @@
     "subtitle": "AI가 추천하는 검증된 스킬 디렉토리",
     "searchPlaceholder": "어떤 스킬을 찾고 있나요?",
     "suggestedTags": "이런 걸 찾고 있나요?",
+    "trendingTitle": "Trending",
+    "newTitle": "New Skills",
+    "viewMore": "더 보기",
+    "browseAll": "전체 스킬 보기",
+    "browseAllDesc": "카테고리, 태그, 키워드로 원하는 스킬을 찾아보세요",
     "sortBy": "정렬",
     "sortStars": "Stars",
     "sortGood": "추천순",
@@ -20,6 +27,19 @@
     "sortRecent": "최신순",
     "category": "카테고리",
     "language": "언어"
+  },
+  "allSkills": {
+    "title": "All Skills",
+    "subtitle": "등록된 모든 스킬을 검색하고 필터링하세요",
+    "searchPlaceholder": "스킬 이름이나 키워드로 검색",
+    "filterByTag": "태그 필터",
+    "showMore": "+{count}개 더 보기",
+    "showLess": "접기",
+    "resultCount": "{count}개 스킬",
+    "noResults": "아직 등록된 스킬이 없습니다",
+    "noResultsQuery": "\"{query}\"에 대한 스킬을 찾지 못했습니다",
+    "noResultsHint": "다른 검색어를 시도하거나 카테고리를 둘러보세요",
+    "noResultsEmpty": "곧 스킬이 추가될 예정입니다"
   },
   "skill": {
     "install": "설치하기",

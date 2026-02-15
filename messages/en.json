@@ -5,6 +5,8 @@
     "login": "Sign in with GitHub",
     "logout": "Sign out",
     "all": "All",
+    "home": "Home",
+    "allSkills": "All Skills",
     "about": "About",
     "discover": "Discover"
   },
@@ -13,6 +15,11 @@
     "subtitle": "AI-powered, community-verified skill directory",
     "searchPlaceholder": "What skill are you looking for?",
     "suggestedTags": "Looking for something like this?",
+    "trendingTitle": "Trending",
+    "newTitle": "New Skills",
+    "viewMore": "View more",
+    "browseAll": "Browse All Skills",
+    "browseAllDesc": "Search by category, tag, or keyword to find the skill you need",
     "sortBy": "Sort by",
     "sortStars": "Stars",
     "sortGood": "Most recommended",
@@ -20,6 +27,19 @@
     "sortRecent": "Recently updated",
     "category": "Category",
     "language": "Language"
+  },
+  "allSkills": {
+    "title": "All Skills",
+    "subtitle": "Search and filter all registered skills",
+    "searchPlaceholder": "Search by skill name or keyword",
+    "filterByTag": "Filter by tag",
+    "showMore": "+{count} more",
+    "showLess": "Show less",
+    "resultCount": "{count} skills",
+    "noResults": "No skills registered yet",
+    "noResultsQuery": "No skills found for \"{query}\"",
+    "noResultsHint": "Try different keywords or browse categories",
+    "noResultsEmpty": "Skills will be added soon"
   },
   "skill": {
     "install": "Install",

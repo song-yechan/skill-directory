@@ -1,7 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 
@@ -12,19 +12,16 @@ const SUGGESTED_TAGS = [
 
 export function HeroSection() {
   const t = useTranslations('home');
+  const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get('q') ?? '');
+  const [query, setQuery] = useState('');
 
   const handleSearch = (q: string) => {
-    const params = new URLSearchParams(searchParams.toString());
     if (q) {
-      params.set('q', q);
+      router.push(`/${locale}/skills?q=${encodeURIComponent(q)}`);
     } else {
-      params.delete('q');
+      router.push(`/${locale}/skills`);
     }
-    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

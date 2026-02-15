@@ -1,5 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import { getTranslations } from 'next-intl/server';
+
+export const revalidate = 60;
 import Link from 'next/link';
 import { SkillCard } from '@/components/skills/skill-card';
 import { Sparkles, TrendingUp, Clock } from 'lucide-react';
@@ -13,7 +15,7 @@ export default async function DiscoverPage({ params, searchParams }: DiscoverPag
   const { locale } = await params;
   const { tab = 'new' } = await searchParams;
   const t = await getTranslations('discover');
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const isNew = tab === 'new';
 
