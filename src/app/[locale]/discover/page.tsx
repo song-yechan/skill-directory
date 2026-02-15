@@ -1,5 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const revalidate = 60;
 import Link from 'next/link';
@@ -13,6 +13,7 @@ interface DiscoverPageProps {
 
 export default async function DiscoverPage({ params, searchParams }: DiscoverPageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { tab = 'new' } = await searchParams;
   const t = await getTranslations('discover');
   const supabase = createPublicClient();

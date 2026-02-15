@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { CategoryBar } from '@/components/skills/category-bar';
 import { SkillCard } from '@/components/skills/skill-card';
 import { TagFilter } from '@/components/skills/tag-filter';
@@ -22,6 +22,7 @@ const SORT_COLUMNS: Record<string, string> = {
 
 export default async function AllSkillsPage({ params, searchParams }: AllSkillsPageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { q, category, sort = 'stars', tag } = await searchParams;
   const t = await getTranslations('allSkills');
   const supabase = createPublicClient();

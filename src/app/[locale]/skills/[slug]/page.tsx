@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { VoteButton } from '@/components/skills/vote-button';
@@ -25,6 +25,7 @@ interface SkillPageProps {
 
 export default async function SkillPage({ params }: SkillPageProps) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('skill');
   const supabase = await createClient();
 

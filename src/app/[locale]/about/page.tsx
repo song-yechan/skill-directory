@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
-import { createClient } from '@/lib/supabase/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import Link from 'next/link';
 import {
   Search, GitBranch, ThumbsUp, Download,
@@ -11,10 +11,13 @@ interface AboutPageProps {
   params: Promise<{ locale: string }>;
 }
 
+export const revalidate = 60;
+
 export default async function AboutPage({ params }: AboutPageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('about');
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { count: totalSkills } = await supabase
     .from('skills')

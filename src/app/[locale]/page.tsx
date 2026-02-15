@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -14,6 +14,7 @@ interface HomePageProps {
 
 export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('home');
   const supabase = createPublicClient();
 
