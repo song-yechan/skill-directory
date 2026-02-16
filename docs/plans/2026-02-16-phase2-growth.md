@@ -1,143 +1,144 @@
 # Phase 2: Growth & Distribution Plan
 
-> Phase 1 완료 (핵심 UI + 데이터 파이프라인). Phase 2는 제품 완성도 향상 + 외부 공유/마케팅에 집중.
+> **현재 상태**: Phase 1 완료 + A1/A2 완료. A3 UX 개선부터 진행.
+> **Compact 후 복구**: 이 파일의 맨 아래 "Resume Prompt" 섹션을 그대로 붙여넣기.
 
 ---
 
-## A. 제품 완성도 (구현 우선순위순)
+## Current State (2026-02-16)
 
-### A1. 데이터 품질 강화
-- [x] seed 필터 재정비 — description/name에 "claude" 필수, MIN_STARS 조정
-- [x] 148개 스킬 enrichment 완료 (ko/en 설명, usage guide, summary, tags)
-- [x] name_ko 추가 — 한국어 이름 7개 분리 + locale별 렌더링
-- [ ] enrich 실패 스킬 재시도 로직 (Gemini 429 시 큐잉)
-- [ ] 수동 스킬 제출 폼 (GitHub URL 입력 → 관리자 승인)
-- [ ] 스킬별 스크린샷/데모 GIF 지원 (og:image 활용)
+### 완료된 작업
+- [x] **A1 데이터**: 148개 스킬 enrichment (ko/en), seed 필터, name_ko 분리
+- [x] **A2 SEO**: generateMetadata, sitemap, robots.txt, JSON-LD, generateStaticParams
+- [x] **버그픽스**: 투표/설치 API (SECURITY DEFINER RPC), 클라이언트 에러 핸들링
+- [x] **성능**: 스킬 목록 클라이언트 사이드 필터링 (Dynamic → SSG)
 
-### A2. SEO & 메타데이터
-- [x] 각 스킬 상세 페이지에 `generateMetadata` — title, description, og:image
-- [x] sitemap.xml 자동 생성 (`app/sitemap.ts`)
-- [x] robots.txt
-- [x] JSON-LD 구조화 데이터 (SoftwareApplication schema)
-- [x] 정적 빌드 최적화 — `generateStaticParams`로 인기 스킬 50개 사전 빌드
-
-### A3. UX 개선
-- [ ] 스킬 상세 페이지 — 관련 스킬 추천 (같은 카테고리/태그 기반)
-- [ ] 검색 자동완성 (debounce + Supabase textSearch)
-- [ ] 카테고리 아이콘 시각화 (현재 텍스트만)
-- [ ] 다크 모드
-
-### A4. API & CLI
-- [ ] REST API 문서화 (OpenAPI/Swagger)
-- [ ] `npx claude-skill install <slug>` CLI 패키지 배포 (npm)
-- [ ] 설치 시 `~/.claude/skills/<slug>/` 자동 구성
-- [ ] `/find-skill` Claude Code 스킬 — API 기반 검색+설치
+### 현재 코드베이스 상태
+- 148개 스킬, 6개 카테고리, 투표/설치/뷰 추적 작동 중
+- ISR 60s + revalidatePath로 캐시 무효화
+- ko/en 완전 i18n (UI + DB 필드)
+- 라이브: https://skill-directory-livid.vercel.app
 
 ---
 
-## B. 마케팅 & 배포 전략
+## A3. UX 개선 (다음 작업)
 
-### B1. 런칭 채널 (우선순위)
+### T1. 관련 스킬 추천 ⭐ 우선순위 높음
+- 스킬 상세 페이지 하단에 "관련 스킬" 섹션 추가
+- 로직: 같은 category_id → 공통 tag 수 기준 정렬 → 상위 4개
+- 서버 사이드에서 계산 (ISR 캐싱 가능)
+- 파일: `src/app/[locale]/skills/[slug]/page.tsx`
 
-| 채널 | 전략 | 예상 효과 | 시기 |
-|------|------|----------|------|
-| **GitHub README** | anthropics/skills에 PR로 디렉토리 링크 추가 제안 | 공식 인정 시 폭발적 트래픽 | 즉시 |
-| **Product Hunt** | "Claude Skill Hub — App Store for Claude Code" 런칭 | 개발자 초기 유입, 소셜 증거 | A2 완료 후 |
-| **Reddit** | r/ClaudeAI, r/anthropic, r/ChatGPT 게시 | 타겟 커뮤니티 직접 접근 | 즉시 |
-| **Twitter/X** | "I built an app store for Claude Code skills" 스레드 | 바이럴 가능성, 개발자 DM 유입 | 즉시 |
-| **Hacker News** | "Show HN: Claude Skill Hub" | 대규모 개발자 트래픽 | Product Hunt과 동시 |
-| **Claude Code Discord** | 커뮤니티에 공유 | 핵심 사용자 접근 | 즉시 |
+### T2. 검색 개선
+- 현재: Enter 키 입력 시 클라이언트 필터링 (이미 빠름)
+- 개선: 타이핑 중 실시간 필터 (debounce 300ms)
+- 파일: `src/components/skills/skills-list-client.tsx`
 
-### B2. 콘텐츠 마케팅
+### T3. 다크 모드
+- CSS Variables 기반이므로 `:root` / `[data-theme="dark"]` 전환
+- `components/layout/` 에 ThemeToggle 추가
+- `globals.css`에 다크 모드 변수 세트
 
-#### 블로그 시리즈 (content-blog 스킬 활용)
-1. **"Claude Code 스킬 베스트 10 — 2026년 개발자 필수"** — SEO 키워드: "claude code 스킬", "클로드 코드 활용"
-2. **"Claude Code 스킬 만드는 법 — 5분 가이드"** — 스킬 제작자 유입 목적
-3. **"AI 코딩 에이전트 도구 비교 — Cursor vs Claude Code vs Copilot"** — 비교 검색 트래픽
+### T4. 반응형 개선
+- 모바일 카테고리 바: 가로 스크롤 + 현재 선택 표시
+- 스킬 카드 그리드: 1열(모바일) → 2열(태블릿) → 3열(데스크톱)
+- 상세 페이지 사이드바: 모바일에서 상단으로 이동
 
-#### 소셜 콘텐츠
-- 주간 "Skill of the Week" 트윗/포스트
-- 새 스킬 등록 시 자동 트윗 (GitHub Actions → Twitter API)
-- 스킬 작성자 인터뷰/소개
+---
 
-### B3. SEO 전략
+## A4. API & CLI
 
-#### 타겟 키워드
-| 키워드 | 의도 | 대응 페이지 |
-|--------|------|------------|
-| claude code skills | 탐색 | 홈페이지 |
+### T5. `/find-skill` Claude Code 스킬
+- 사용자가 Claude Code 안에서 `claude skill search <keyword>` 실행
+- REST API `/api/skills?q=keyword` 호출 → 결과 반환
+- `~/.claude/skills/find-skill/SKILL.md` 생성
+
+### T6. npm CLI 패키지
+- `npx claude-skill install <slug>` → SKILL.md 다운로드 + `~/.claude/skills/<slug>/` 배치
+- GitHub raw content에서 직접 fetch
+
+---
+
+## B. 마케팅 전략
+
+### B1. 런칭 채널 (우선순위순)
+
+| 채널 | 전략 | 시기 |
+|------|------|------|
+| **Reddit** | r/ClaudeAI, r/anthropic 게시 | A3 완료 후 즉시 |
+| **Twitter/X** | "I built an app store for Claude Code skills" 스레드 | Reddit과 동시 |
+| **Claude Code Discord** | 커뮤니티에 공유 | 동시 |
+| **Hacker News** | "Show HN: Claude Skill Hub" | Reddit 반응 확인 후 |
+| **Product Hunt** | "App Store for Claude Code" | 제품 완성 후 |
+
+### B2. 콘텐츠
+1. "Claude Code 스킬 베스트 10" — SEO 키워드: "claude code 스킬"
+2. "Claude Code 스킬 만드는 법 — 5분 가이드" — 작성자 유입
+3. "AI 코딩 에이전트 비교 — Cursor vs Claude Code vs Copilot" — 비교 트래픽
+
+### B3. SEO 키워드
+
+| 키워드 | 의도 | 대응 |
+|--------|------|------|
+| claude code skills | 탐색 | 홈 |
 | claude code 스킬 추천 | 정보 | 블로그 |
-| claude code skill install | 거래 | 스킬 상세 |
-| claude code testing skill | 세부 | 카테고리 필터 |
+| claude code skill install | 거래 | 상세 |
 | best claude code extensions | 비교 | 블로그 |
 
-#### 기술 SEO
-- ISR 60s로 검색엔진 크롤링 최적화 (이미 적용됨)
-- 각 스킬 페이지가 독립 검색 결과로 노출되도록 canonical URL
-- hreflang 태그 (ko/en 언어별 페이지)
-
-### B4. 커뮤니티 성장 플라이휠
-
-```
-스킬 작성자가 등록 → 디렉토리에 노출 → 사용자 설치/투표
-        ↑                                      ↓
-  작성자에게 통계 제공 ← 인기도 데이터 축적 ← 트래픽 유입
-```
-
-#### 작성자 유인 전략
-- **배지 시스템** — 스킬 상세에 "Featured", "Trending", "Community Pick" 배지
-- **작성자 프로필** — GitHub 프로필 연동, 제작 스킬 목록
-- **통계 대시보드** — 내 스킬의 조회수, 설치수, 투표 추이
-- **자동 알림** — 내 스킬이 투표/설치될 때 이메일 알림
-
-### B5. 파트너십 & 생태계
-
-| 파트너 | 방식 | 기대 효과 |
-|--------|------|----------|
-| Anthropic | 공식 디렉토리 인정, Skills 레포 연동 | 신뢰도 + 트래픽 |
-| MCP 서버 개발자 | MCP 도구를 스킬로 래핑하여 등록 | 콘텐츠 확대 |
-| Claude Code 인플루언서 | 사용 후기, 튜토리얼 | 인지도 |
-| 개발 블로거 | 게스트 포스트, 스킬 리뷰 | SEO 백링크 |
-
 ---
 
-## C. 구현 로드맵
+## C. 로드맵
 
-### Week 1-2: 기반 다지기
-- [x] SEO 메타데이터 + sitemap + robots.txt
-- [x] JSON-LD 구조화 데이터
-- [x] 투표/설치 API 수정 (SECURITY DEFINER RPC + revalidatePath)
-- [x] 스킬 목록 클라이언트 사이드 필터링 (성능 개선)
-- [ ] README 정리 + .env.local.example 생성
+### Sprint 1 (현재): UX 개선
+- [ ] T1. 관련 스킬 추천
+- [ ] T2. 검색 실시간 필터 (debounce)
+- [ ] T3. 다크 모드
+- [ ] T4. 반응형 개선
+
+### Sprint 2: API & 런칭 준비
+- [ ] T5. `/find-skill` 스킬
+- [ ] T6. npm CLI 패키지
+- [ ] README 정리 + .env.local.example
 - [ ] Reddit/Discord/Twitter 첫 공유
 
-### Week 3-4: 제품 강화
-- [ ] 관련 스킬 추천
-- [ ] 검색 자동완성
-- [ ] 수동 스킬 제출 폼
-- [ ] CLI 패키지 (npm 배포)
-
-### Week 5-6: 런칭
-- [ ] Product Hunt 준비 (스크린샷, 데모 GIF, 카피)
-- [ ] Hacker News "Show HN" 게시
-- [ ] 블로그 시리즈 1편 발행
-- [ ] 스킬 작성자 5명에게 개별 연락
-
-### Week 7-8: 성장
-- [ ] 작성자 통계 대시보드
-- [ ] 주간 뉴스레터 / "Skill of the Week"
-- [ ] 다크 모드
-- [ ] 스킬 비교 기능
+### Sprint 3: 런칭 & 성장
+- [ ] Product Hunt 준비
+- [ ] Hacker News "Show HN"
+- [ ] 블로그 시리즈 1편
+- [ ] 스킬 작성자 연락
 
 ---
 
-## D. 성공 지표 (KPI)
+## D. KPI (8주 후)
 
-| 지표 | 목표 (8주 후) |
-|------|-------------|
+| 지표 | 목표 |
+|------|------|
 | 등록 스킬 수 | 300+ |
 | 주간 방문자 | 1,000+ |
 | 총 설치 수 | 500+ |
 | GitHub Stars | 100+ |
-| Product Hunt 순위 | Top 5 of the day |
 | 구글 검색 노출 키워드 | 10+ |
+
+---
+
+## Resume Prompt
+
+> **아래 프롬프트를 compact/clear 후 첫 메시지로 붙여넣으면 컨텍스트가 복구됩니다.**
+
+```
+skill-directory 프로젝트 Phase 2 이어서 진행해줘.
+
+현재 상태:
+- Phase 1 완료, Phase 2 A1(데이터)/A2(SEO) 완료
+- 148개 스킬, 투표/설치/뷰 모두 작동 중
+- 배포: https://skill-directory-livid.vercel.app
+
+다음 작업:
+1. `docs/plans/2026-02-16-phase2-growth.md` 읽어서 Sprint 1 (A3 UX 개선) 확인
+2. T1 관련 스킬 추천부터 시작
+
+규칙:
+- CLAUDE.md 먼저 읽어서 아키텍처/컨벤션 파악
+- 작업 완료마다 CLAUDE.md + Phase 2 플랜 체크박스 업데이트
+- 커밋 후 push (Vercel 자동 배포)
+```
