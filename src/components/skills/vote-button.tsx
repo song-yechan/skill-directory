@@ -50,21 +50,23 @@ export function VoteButton({ skillId, goodCount, badCount }: VoteButtonProps) {
     startTransition(async () => {
       if (vote === type) {
         // Remove vote
-        await fetch(`/api/skills/${skillId}/vote`, {
+        const res = await fetch(`/api/skills/${skillId}/vote`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ vote_type: type }),
         });
-        setCounts((prev) => ({ ...prev, [type]: prev[type] - 1 }));
+        if (!res.ok) return;
+        setCounts((prev) => ({ ...prev, [type]: Math.max(prev[type] - 1, 0) }));
         setVote(null);
         setStoredVote(skillId, null);
       } else {
         // Add or change vote
-        await fetch(`/api/skills/${skillId}/vote`, {
+        const res = await fetch(`/api/skills/${skillId}/vote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ vote_type: type, previous_vote: vote }),
         });
+        if (!res.ok) return;
         setCounts((prev) => ({
           good: prev.good + (type === 'good' ? 1 : 0) - (vote === 'good' ? 1 : 0),
           bad: prev.bad + (type === 'bad' ? 1 : 0) - (vote === 'bad' ? 1 : 0),

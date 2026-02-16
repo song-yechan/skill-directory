@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: SkillPageProps): Promise<Meta
 
   const { data: skill } = await supabase
     .from('skills')
-    .select('name, description_ko, description_en')
+    .select('name, name_ko, description_ko, description_en')
     .eq('slug', slug)
     .single();
 
@@ -42,8 +42,9 @@ export async function generateMetadata({ params }: SkillPageProps): Promise<Meta
     };
   }
 
+  const displayName = locale === 'ko' ? skill.name_ko ?? skill.name : skill.name;
   const description = locale === 'ko' ? skill.description_ko : skill.description_en;
-  const title = `${skill.name} — Claude Skill Hub`;
+  const title = `${displayName} — Claude Skill Hub`;
   const url = `https://skill-directory-livid.vercel.app/${locale}/skills/${slug}`;
 
   return {
@@ -95,6 +96,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
   // Fire-and-forget view tracking
   supabase.rpc('increment_view', { p_skill_id: skill.id }).then();
 
+  const displayName = locale === 'ko' ? skill.name_ko ?? skill.name : skill.name;
   const description = locale === 'ko' ? skill.description_ko : skill.description_en;
   const categoryLabel = CATEGORY_LABELS[skill.category_id]?.[locale as 'ko' | 'en'] ?? skill.category_id;
   const installCommand = `claude skill install ${skill.slug}`;
@@ -103,7 +105,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: skill.name,
+    name: displayName,
     description,
     url: `https://skill-directory-livid.vercel.app/${locale}/skills/${slug}`,
     applicationCategory: 'DeveloperApplication',
@@ -145,7 +147,7 @@ export default async function SkillPage({ params }: SkillPageProps) {
             </div>
 
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-              {skill.name}
+              {locale === 'ko' ? skill.name_ko ?? skill.name : skill.name}
             </h1>
 
             <p className="mt-3 text-lg leading-relaxed text-[var(--text-secondary)]">

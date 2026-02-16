@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export async function POST(
   request: Request,
@@ -12,13 +13,16 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-
-  await supabase.from('installs').insert({
-    skill_id: skillId,
-    user_id: null,
-    source,
+  const supabase = createPublicClient();
+  const { error } = await supabase.rpc('track_install', {
+    p_skill_id: skillId,
+    p_source: source,
   });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
+  revalidatePath('/[locale]', 'page');
+  revalidatePath('/[locale]/skills', 'page');
   return NextResponse.json({ success: true });
 }

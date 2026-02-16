@@ -8,6 +8,7 @@ interface SkillCardProps {
   readonly skill: {
     readonly slug: string;
     readonly name: string;
+    readonly name_ko: string | null;
     readonly summary_ko: string | null;
     readonly summary_en: string | null;
     readonly stars: number;
@@ -45,7 +46,7 @@ export function SkillCard({ skill }: SkillCardProps) {
       </span>
 
       <h3 className="mt-1.5 text-base font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent)]">
-        {skill.name}
+        {locale === 'ko' ? skill.name_ko ?? skill.name : skill.name}
       </h3>
 
       <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--text-secondary)] line-clamp-2">

@@ -42,12 +42,18 @@ export function InstallCommand({ command, skillId }: InstallCommandProps) {
 
     // Track install once per skill per browser
     if (!hasTrackedInstall(skillId)) {
-      markInstallTracked(skillId);
-      fetch(`/api/skills/${skillId}/install`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'web' }),
-      }).catch(() => {});
+      try {
+        const res = await fetch(`/api/skills/${skillId}/install`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source: 'web' }),
+        });
+        if (res.ok) {
+          markInstallTracked(skillId);
+        }
+      } catch {
+        // Network error — don't mark as tracked
+      }
     }
   };
 
