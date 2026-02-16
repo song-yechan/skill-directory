@@ -273,11 +273,11 @@ export default async function SkillPage({ params }: SkillPageProps) {
 
           {/* Stats card */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-amber-500">
-                  <Star className="h-4 w-4" />
-                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                  <Star className="h-3.5 w-3.5" />
+                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
                     {skill.stars.toLocaleString()}
                   </span>
                 </div>
@@ -285,8 +285,8 @@ export default async function SkillPage({ params }: SkillPageProps) {
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-[var(--accent)]">
-                  <Download className="h-4 w-4" />
-                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                  <Download className="h-3.5 w-3.5" />
+                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
                     {skill.install_count.toLocaleString()}
                   </span>
                 </div>
@@ -294,26 +294,26 @@ export default async function SkillPage({ params }: SkillPageProps) {
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
-                  <Eye className="h-4 w-4" />
-                  <span className="text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                  <Eye className="h-3.5 w-3.5" />
+                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
                     {skill.view_count.toLocaleString()}
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('views')}</p>
               </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {new Date(skill.github_created_at ?? skill.created_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('createdAt')}</p>
-              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-1.5 border-t border-[var(--border)] pt-3 text-[var(--text-tertiary)]">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-xs">
+                {t('createdAt')}:
+              </span>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
+                {new Date(skill.github_created_at ?? skill.created_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </span>
             </div>
           </div>
 
