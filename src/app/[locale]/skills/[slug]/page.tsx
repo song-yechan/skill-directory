@@ -305,14 +305,14 @@ export default async function SkillPage({ params }: SkillPageProps) {
                 <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {new Date(skill.updated_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
+                    {new Date(skill.github_created_at ?? skill.created_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric'
                     })}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('lastUpdated')}</p>
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('createdAt')}</p>
               </div>
             </div>
           </div>

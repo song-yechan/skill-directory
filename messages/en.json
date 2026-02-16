@@ -61,6 +61,7 @@
     "installs": "Installs",
     "stars": "Stars",
     "lastUpdated": "Last updated",
+    "createdAt": "Created",
     "howToInstall": "Installation",
     "howToUse": "Usage",
     "examples": "Examples",

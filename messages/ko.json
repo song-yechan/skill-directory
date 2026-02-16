@@ -61,6 +61,7 @@
     "installs": "설치",
     "stars": "Stars",
     "lastUpdated": "최근 업데이트",
+    "createdAt": "생성일",
     "howToInstall": "설치 방법",
     "howToUse": "사용 방법",
     "examples": "예시",
