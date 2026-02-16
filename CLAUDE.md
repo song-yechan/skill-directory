@@ -40,7 +40,7 @@ supabase db push  # linked project로 자동 적용
 |-------|------|--------|
 | `/[locale]` | 홈 (Hero + Popular 5 + Trending 5) | SSG + ISR 60s |
 | `/[locale]/skills` | 전체 스킬 (클라이언트 필터/정렬) | SSG + ISR 60s |
-| `/[locale]/skills/[slug]` | 스킬 상세 | SSG (top 50) + ISR |
+| `/[locale]/skills/[slug]` | 스킬 상세 + 관련 스킬 4개 | SSG (top 50) + ISR |
 | `/[locale]/discover` | New/Trending 탭 | Dynamic |
 | `/[locale]/about` | 소개 | Static |
 
@@ -51,9 +51,17 @@ supabase db push  # linked project로 자동 적용
 - **`admin.ts`**: 서비스 키. **스크립트 전용** (API 라우트 금지).
 
 ### Key Components
-- `SkillsListClient` — 검색/카테고리/태그/정렬 통합 (클라이언트 사이드, SSG 가능)
+- `SkillsListClient` — 실시간 debounce 검색 (300ms) + 카테고리/태그/정렬 통합 + 빈 결과 시 인기 태그 추천
+- `HeroSection` — Hero 검색 + 드롭다운 프리뷰 (200ms debounce, 상위 5개)
 - `SkillCard` — 스킬 카드 (name_ko fallback 포함)
 - `VoteButton` / `InstallCommand` — RPC 호출 + response.ok 검증 + localStorage 중복 방지
+- `useDebounce` — `src/hooks/use-debounce.ts` 공용 debounce 훅
+
+### API
+- `GET /api/skills` — 공개 REST API (CORS 지원)
+  - 파라미터: `q`, `category`, `tag`, `sort`, `limit`, `offset`
+  - 검색 대상: name, name_ko, summary_ko/en, description_ko/en
+  - 정렬: stars, good, installs, views, recent
 
 ### Data Pipeline
 - `scripts/seed-skills.ts` — GitHub 수집 ("claude" 필수 필터)
@@ -89,7 +97,7 @@ supabase db push  # linked project로 자동 적용
 
 ## Progress
 - **Phase 1**: 완료 (`docs/plans/2026-02-15-skill-directory-design.md`)
-- **Phase 2**: A1/A2 완료, **A3부터 진행** → `docs/plans/2026-02-16-phase2-growth.md`
+- **Phase 2**: A1/A2 완료, Sprint 1 (검색+관련스킬+API) 완료, **다크모드/반응형부터 진행** → `docs/plans/2026-02-16-phase2-growth.md`
 
 ## Documentation Maintenance
 매 작업 완료 시 아래 3개 파일 업데이트:

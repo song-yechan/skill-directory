@@ -6,6 +6,14 @@
 
 ## 2026-02-16
 
+### feat: 실시간 검색 + 관련 스킬 + API 개선 `9f8db0b`
+- 실시간 debounce 검색 (300ms) + 태그 매칭 + 빈 결과 시 인기 태그 추천
+- Hero 검색 드롭다운 프리뷰 (200ms, 상위 5개)
+- 스킬 상세 하단 관련 스킬 4개 (같은 카테고리 + 공통 태그 정렬)
+- API: `createPublicClient` + name_ko/summary 검색 + tag 파라미터 + views 정렬 + CORS
+- `/find-skill` Claude 스킬 생성, README API 문서 추가, `.env.local.example` 생성
+- `useDebounce` 공용 훅 (`src/hooks/use-debounce.ts`)
+
 ### docs: CLAUDE.md 최적화 + Phase 2 플랜 리라이트 `fd376a8`
 - CLAUDE.md에 DB Schema 섹션 추가 (RPCs, migration 포함)
 - Phase 2 플랜을 Sprint 기반으로 재구성 + Resume Prompt 추가

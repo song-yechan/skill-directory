@@ -1,6 +1,6 @@
 # Phase 2: Growth & Distribution Plan
 
-> **현재 상태**: Phase 1 완료 + A1/A2 완료. A3 UX 개선부터 진행.
+> **현재 상태**: Phase 1 완료 + A1/A2 완료 + Sprint 1 완료 (검색/관련스킬/API). 다크모드/반응형부터 진행.
 > **Compact 후 복구**: 이 파일의 맨 아래 "Resume Prompt" 섹션을 그대로 붙여넣기.
 
 ---
@@ -89,16 +89,18 @@
 
 ## C. 로드맵
 
-### Sprint 1 (현재): UX 개선
-- [ ] T1. 관련 스킬 추천
-- [ ] T2. 검색 실시간 필터 (debounce)
+### Sprint 1 (완료): 검색 + 관련 스킬 + API
+- [x] T1. 관련 스킬 추천
+- [x] T2. 검색 실시간 필터 (debounce) + Hero 드롭다운 프리뷰 + 태그 검색 + 빈 결과 인기 태그 추천
 - [ ] T3. 다크 모드
 - [ ] T4. 반응형 개선
+- [x] T5. `/find-skill` 스킬 + API CORS + name_ko/summary 검색 + tag 파라미터
+- [x] README 정리 + .env.local.example
 
-### Sprint 2: API & 런칭 준비
-- [ ] T5. `/find-skill` 스킬
+### Sprint 2 (다음): 다크모드 + 반응형 + 런칭
+- [ ] T3. 다크 모드
+- [ ] T4. 반응형 개선
 - [ ] T6. npm CLI 패키지
-- [ ] README 정리 + .env.local.example
 - [ ] Reddit/Discord/Twitter 첫 공유
 
 ### Sprint 3: 런칭 & 성장
@@ -134,8 +136,8 @@ skill-directory 프로젝트 Phase 2 이어서 진행해줘.
 - 배포: https://skill-directory-livid.vercel.app
 
 다음 작업:
-1. `docs/plans/2026-02-16-phase2-growth.md` 읽어서 Sprint 1 (A3 UX 개선) 확인
-2. T1 관련 스킬 추천부터 시작
+1. `docs/plans/2026-02-16-phase2-growth.md` 읽어서 Sprint 2 확인
+2. T3 다크 모드부터 시작
 
 규칙:
 - CLAUDE.md 먼저 읽어서 아키텍처/컨벤션 파악
