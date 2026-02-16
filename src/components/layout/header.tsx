@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { LocaleSwitcher } from './locale-switcher';
-import { GitHubLoginButton } from '@/components/auth/github-login-button';
+import { GoogleLoginButton } from '@/components/auth/google-login-button';
 
 export function Header() {
   const t = useTranslations('common');
@@ -49,7 +49,7 @@ export function Header() {
           })}
           <div className="mx-1 h-4 w-px bg-[var(--border)] sm:mx-2" />
           <LocaleSwitcher />
-          <GitHubLoginButton />
+          <GoogleLoginButton />
         </nav>
       </div>
     </header>
