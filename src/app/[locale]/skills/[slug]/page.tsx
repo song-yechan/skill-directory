@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { VoteButton } from '@/components/skills/vote-button';
 import { InstallCommand } from '@/components/skills/install-command';
+import { SkillCard } from '@/components/skills/skill-card';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import {
   Star, Download, Eye, ExternalLink, ArrowLeft,
@@ -95,6 +96,24 @@ export default async function SkillPage({ params }: SkillPageProps) {
 
   // Fire-and-forget view tracking
   supabase.rpc('increment_view', { p_skill_id: skill.id }).then();
+
+  // Related skills: same category, sorted by common tag count
+  const { data: sameCategorySkills } = await supabase
+    .from('skills')
+    .select('slug, name, name_ko, summary_ko, summary_en, stars, good_count, bad_count, view_count, install_count, category_id, tags')
+    .eq('category_id', skill.category_id)
+    .neq('slug', slug)
+    .limit(20);
+
+  const relatedSkills = (sameCategorySkills ?? [])
+    .map((s) => {
+      const commonTags = (s.tags ?? []).filter((tag: string) =>
+        (skill.tags ?? []).includes(tag)
+      ).length;
+      return { ...s, commonTags };
+    })
+    .sort((a, b) => b.commonTags - a.commonTags)
+    .slice(0, 4);
 
   const displayName = locale === 'ko' ? skill.name_ko ?? skill.name : skill.name;
   const description = locale === 'ko' ? skill.description_ko : skill.description_en;
@@ -211,6 +230,20 @@ export default async function SkillPage({ params }: SkillPageProps) {
                 <MarkdownRenderer content={skill.readme_raw} />
               </div>
             </details>
+          )}
+
+          {/* Related Skills */}
+          {relatedSkills.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                {t('relatedSkills')}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {relatedSkills.map((rs) => (
+                  <SkillCard key={rs.slug} skill={rs} />
+                ))}
+              </div>
+            </section>
           )}
         </div>
 

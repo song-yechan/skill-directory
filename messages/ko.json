@@ -48,7 +48,8 @@
     "noResults": "아직 등록된 스킬이 없습니다",
     "noResultsQuery": "\"{query}\"에 대한 스킬을 찾지 못했습니다",
     "noResultsHint": "다른 검색어를 시도하거나 카테고리를 둘러보세요",
-    "noResultsEmpty": "곧 스킬이 추가될 예정입니다"
+    "noResultsEmpty": "곧 스킬이 추가될 예정입니다",
+    "tryTags": "인기 태그를 둘러보세요"
   },
   "skill": {
     "install": "설치하기",
@@ -64,7 +65,8 @@
     "howToUse": "사용 방법",
     "examples": "예시",
     "viewReadme": "원본 README 보기",
-    "accountTooNew": "계정 생성 30일 이후 투표 가능합니다"
+    "accountTooNew": "계정 생성 30일 이후 투표 가능합니다",
+    "relatedSkills": "관련 스킬"
   },
   "about": {
     "title": "Claude Skill Directory",

@@ -2,26 +2,68 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useDebounce } from '@/hooks/use-debounce';
+
+interface HeroSkill {
+  readonly slug: string;
+  readonly name: string;
+  readonly name_ko: string | null;
+  readonly summary_ko: string | null;
+  readonly summary_en: string | null;
+  readonly tags: readonly string[];
+}
+
+interface HeroSectionProps {
+  readonly allSkills?: readonly HeroSkill[];
+}
 
 const SUGGESTED_TAGS = [
   'test-automation', 'code-review', 'commit', 'security',
   'documentation', 'refactoring', 'deployment', 'debugging'
 ];
 
-export function HeroSection() {
+export function HeroSection({ allSkills = [] }: HeroSectionProps) {
   const t = useTranslations('home');
   const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const debouncedQuery = useDebounce(query, 200);
+
+  const previewResults = useMemo(() => {
+    if (!debouncedQuery || debouncedQuery.length < 2) return [];
+    const q = debouncedQuery.toLowerCase();
+    return allSkills
+      .filter((s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.name_ko?.toLowerCase().includes(q) ||
+        s.summary_en?.toLowerCase().includes(q) ||
+        s.summary_ko?.toLowerCase().includes(q) ||
+        s.tags?.some(tag => tag.toLowerCase().includes(q))
+      )
+      .slice(0, 5);
+  }, [debouncedQuery, allSkills]);
 
   const handleSearch = (q: string) => {
+    setShowDropdown(false);
     if (q) {
       router.push(`/${locale}/skills?q=${encodeURIComponent(q)}`);
     } else {
       router.push(`/${locale}/skills`);
     }
+  };
+
+  const handleBlur = () => {
+    blurTimeoutRef.current = setTimeout(() => setShowDropdown(false), 200);
+  };
+
+  const handleFocus = () => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    if (query.length >= 2) setShowDropdown(true);
   };
 
   return (
@@ -42,11 +84,37 @@ export function HeroSection() {
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowDropdown(e.target.value.length >= 2);
+            }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder={t('searchPlaceholder')}
             className="w-full rounded-xl bg-white py-3.5 pl-12 pr-4 text-base text-[var(--text-primary)] shadow-lg placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
+
+          {/* Search preview dropdown */}
+          {showDropdown && previewResults.length > 0 && (
+            <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl bg-white shadow-xl">
+              {previewResults.map((skill) => (
+                <Link
+                  key={skill.slug}
+                  href={`/${locale}/skills/${skill.slug}`}
+                  className="flex flex-col px-4 py-3 text-left transition-colors hover:bg-[var(--accent-light)]"
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    {locale === 'ko' ? skill.name_ko ?? skill.name : skill.name}
+                  </span>
+                  <span className="mt-0.5 text-xs text-[var(--text-tertiary)] line-clamp-1">
+                    {locale === 'ko' ? skill.summary_ko ?? skill.summary_en : skill.summary_en}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">

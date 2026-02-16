@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import { useDebounce } from '@/hooks/use-debounce';
 import { SkillCard } from './skill-card';
 import { Search, Tag, X, Code, FlaskConical, Server, Zap, FileText, Puzzle } from 'lucide-react';
 import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
@@ -59,6 +60,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
 
   // Local filter state (initialized from URL)
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
+  const debouncedQuery = useDebounce(query, 300);
   const [category, setCategory] = useState(searchParams.get('category') ?? 'all');
   const [sort, setSort] = useState(searchParams.get('sort') ?? 'stars');
   const [activeTag, setActiveTag] = useState(searchParams.get('tag') ?? '');
@@ -109,15 +111,16 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
     }
 
     // Search filter
-    if (query) {
-      const q = query.toLowerCase();
+    if (debouncedQuery) {
+      const q = debouncedQuery.toLowerCase();
       result = result.filter((s) =>
         s.name.toLowerCase().includes(q) ||
         s.name_ko?.toLowerCase().includes(q) ||
         s.description_en?.toLowerCase().includes(q) ||
         s.description_ko?.toLowerCase().includes(q) ||
         s.summary_en?.toLowerCase().includes(q) ||
-        s.summary_ko?.toLowerCase().includes(q)
+        s.summary_ko?.toLowerCase().includes(q) ||
+        s.tags?.some(tag => tag.toLowerCase().includes(q))
       );
     }
 
@@ -147,13 +150,24 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
     }
 
     return result;
-  }, [allSkills, category, activeTag, query, sort]);
+  }, [allSkills, category, activeTag, debouncedQuery, sort]);
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      updateFilter('q', query);
+  useEffect(() => {
+    syncUrl({ q: debouncedQuery, category, sort, tag: activeTag });
+  }, [debouncedQuery, category, sort, activeTag, syncUrl]);
+
+  const popularTags = useMemo(() => {
+    const tagCount = new Map<string, number>();
+    for (const skill of allSkills) {
+      for (const tag of skill.tags ?? []) {
+        tagCount.set(tag, (tagCount.get(tag) ?? 0) + 1);
+      }
     }
-  };
+    return [...tagCount.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([tag]) => tag);
+  }, [allSkills]);
 
   return (
     <div className="space-y-6">
@@ -163,11 +177,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (!e.target.value) updateFilter('q', '');
-          }}
-          onKeyDown={handleSearch}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchPlaceholder')}
           className="w-full rounded-lg border border-[var(--border)] bg-white py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
@@ -280,6 +290,25 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
           <p className="text-sm text-[var(--text-tertiary)]">
             {query ? t('noResultsHint') : t('noResultsEmpty')}
           </p>
+          {query && popularTags.length > 0 && (
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-[var(--text-tertiary)]">{t('tryTags')}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {popularTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setQuery('');
+                      updateFilter('tag', tag);
+                    }}
+                    className="rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

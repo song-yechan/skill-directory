@@ -48,7 +48,8 @@
     "noResults": "No skills registered yet",
     "noResultsQuery": "No skills found for \"{query}\"",
     "noResultsHint": "Try different keywords or browse categories",
-    "noResultsEmpty": "Skills will be added soon"
+    "noResultsEmpty": "Skills will be added soon",
+    "tryTags": "Try popular tags"
   },
   "skill": {
     "install": "Install",
@@ -64,7 +65,8 @@
     "howToUse": "Usage",
     "examples": "Examples",
     "viewReadme": "View original README",
-    "accountTooNew": "Your account must be at least 30 days old to vote"
+    "accountTooNew": "Your account must be at least 30 days old to vote",
+    "relatedSkills": "Related Skills"
   },
   "about": {
     "title": "Claude Skill Directory",

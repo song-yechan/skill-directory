@@ -46,7 +46,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <div className="space-y-12">
-      <HeroSection />
+      <HeroSection allSkills={skills} />
 
       {/* Popular (composite score) */}
       <section>

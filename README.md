@@ -16,6 +16,9 @@ Claude Skill Hub automatically collects Claude Code skills from GitHub, enriches
 - **Trending** — Weekly snapshot-based delta scoring surfaces rising skills
 - **Bilingual** — Full Korean/English support via next-intl
 - **Search & Filter** — By category, tags, sort (popular, trending, stars, recent)
+- **Real-time search** — Debounced instant filtering with tag search, Hero dropdown preview
+- **Related skills** — Tag-overlap based recommendations on skill detail pages
+- **Public API** — `GET /api/skills` with CORS support for external integrations
 
 ## Tech Stack
 
@@ -68,6 +71,8 @@ src/
 │   ├── skills/[slug]/page.tsx # Skill detail
 │   ├── discover/page.tsx     # Discover (New/Trending tabs)
 │   └── about/page.tsx        # About
+├── hooks/
+│   └── use-debounce.ts       # Debounce hook for real-time search
 ├── components/
 │   ├── layout/               # Header, Footer, LocaleSwitcher
 │   ├── skills/               # SkillCard, CategoryBar, VoteButton, etc.
@@ -102,6 +107,25 @@ score = stars × 0.01 + views × 1 + installs × 5 + good × 10 - bad × 10
 
 ```
 trending = Δviews + Δinstalls × 5 + Δgood × 10
+```
+
+## API
+
+### `GET /api/skills`
+
+Public REST API with CORS support. Useful for building custom integrations or Claude Code skills.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | — | Search query (name, description, summary) |
+| `category` | string | — | Category filter |
+| `tag` | string | — | Tag filter (exact match) |
+| `sort` | string | `stars` | Sort by: stars, good, installs, views, recent |
+| `limit` | number | `50` | Results per page (max 100) |
+| `offset` | number | `0` | Pagination offset |
+
+```bash
+curl "https://skill-directory-livid.vercel.app/api/skills?q=test&sort=installs&limit=10"
 ```
 
 ## License
