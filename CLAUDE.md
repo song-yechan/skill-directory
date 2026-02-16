@@ -92,4 +92,7 @@ supabase db push  # linked project로 자동 적용
 - **Phase 2**: A1/A2 완료, **A3부터 진행** → `docs/plans/2026-02-16-phase2-growth.md`
 
 ## Documentation Maintenance
-매 작업 완료 시 이 파일 + Phase 2 플랜의 체크박스 업데이트.
+매 작업 완료 시 아래 3개 파일 업데이트:
+1. **이 파일 (CLAUDE.md)** — 아키텍처/컨벤션 변경 시
+2. **Phase 2 플랜** — 체크박스 업데이트
+3. **`docs/BUILD_LOG.md`** — 커밋 해시 + 변경 요약 추가 (최신이 위, 날짜별 그룹)
