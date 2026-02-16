@@ -2,20 +2,58 @@
 
 import { createClient } from '@/lib/supabase/client';
 import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 
 export function GoogleLoginButton() {
   const t = useTranslations('common');
   const locale = useLocale();
   const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => setUser(session?.user ?? null)
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/${locale}/auth/callback`
-      }
+        redirectTo: `${window.location.origin}/${locale}/auth/callback`,
+      },
     });
   };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  if (user) {
+    return (
+      <div className="flex items-center gap-2">
+        {user.user_metadata?.avatar_url && (
+          <img
+            src={user.user_metadata.avatar_url}
+            alt=""
+            className="h-7 w-7 rounded-full"
+          />
+        )}
+        <button
+          onClick={handleLogout}
+          className="rounded-lg px-3 py-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] cursor-pointer"
+        >
+          {t('logout')}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <button
