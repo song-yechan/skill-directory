@@ -3,9 +3,12 @@
 :root {
   --bg-primary: #fafafa;
   --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
   --bg-code: #1e1e2e;
   --bg-hero-from: #0f172a;
   --bg-hero-to: #1e293b;
+  --bg-input: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.8);
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
@@ -26,6 +29,41 @@
 
   --border: #e2e8f0;
   --border-hover: #cbd5e1;
+
+  --shadow-dropdown: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --bg-code: #0f172a;
+  --bg-hero-from: #020617;
+  --bg-hero-to: #0f172a;
+  --bg-input: #1e293b;
+  --bg-header: rgba(15, 23, 42, 0.8);
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-inverse: #0f172a;
+  --text-code: #a6e3a1;
+
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-light: rgba(99, 102, 241, 0.15);
+  --accent-green: #34d399;
+  --accent-green-hover: #10b981;
+
+  --vote-good: #34d399;
+  --vote-good-bg: rgba(16, 185, 129, 0.15);
+  --vote-bad: #f87171;
+  --vote-bad-bg: rgba(239, 68, 68, 0.15);
+
+  --border: #334155;
+  --border-hover: #475569;
+
+  --shadow-dropdown: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -37,4 +75,5 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
+  transition: background-color 0.2s, color 0.2s;
 }

@@ -179,7 +179,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchPlaceholder')}
-          className="w-full rounded-lg border border-[var(--border)] bg-white py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-input)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
       </div>
 
@@ -191,7 +191,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               category === 'all'
                 ? 'border-transparent bg-[var(--accent)] text-white'
-                : 'border-[var(--border)] bg-white text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
             }`}
           >
             {tHome('all') ?? '전체'}
@@ -203,7 +203,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
               className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                 category === cat.id
                   ? 'border-transparent bg-[var(--accent)] text-white'
-                  : 'border-[var(--border)] bg-white text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                  : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
               }`}
             >
               {CATEGORY_ICONS[cat.id]}
@@ -215,7 +215,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
         <select
           value={sort}
           onChange={(e) => updateFilter('sort', e.target.value)}
-          className="shrink-0 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text-secondary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+          className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-secondary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt} value={opt}>

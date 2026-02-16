@@ -50,6 +50,13 @@ supabase db push  # linked project로 자동 적용
 - **`client.ts`**: 브라우저 클라이언트 컴포넌트용.
 - **`admin.ts`**: 서비스 키. **스크립트 전용** (API 라우트 금지).
 
+### Auth (Google OAuth)
+- Provider: Google (Supabase Auth)
+- Middleware: `src/middleware.ts` — next-intl + Supabase 세션 갱신 통합
+- Callback: `src/app/[locale]/auth/callback/route.ts` — code → session 교환
+- UI: `GoogleLoginButton` — `onAuthStateChange`로 로그인/로그아웃 자동 전환
+- **OAuth 작업 체크리스트**: ①콜백 URL (locale prefix 필수) ②미들웨어 세션 갱신 ③로그인 상태 UI
+
 ### Key Components
 - `SkillsListClient` — 실시간 debounce 검색 (300ms) + 카테고리/태그/정렬 통합 + 빈 결과 시 인기 태그 추천
 - `HeroSection` — Hero 검색 + 드롭다운 프리뷰 (200ms debounce, 상위 5개)

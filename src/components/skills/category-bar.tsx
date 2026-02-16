@@ -55,7 +55,7 @@ export function CategoryBar({ categories, locale }: CategoryBarProps) {
           className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
             currentCategory === 'all'
               ? 'border-transparent bg-[var(--accent)] text-white'
-              : 'border-[var(--border)] bg-white text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+              : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
           }`}
         >
           {t('all') ?? '전체'}
@@ -67,7 +67,7 @@ export function CategoryBar({ categories, locale }: CategoryBarProps) {
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               currentCategory === cat.id
                 ? 'border-transparent bg-[var(--accent)] text-white'
-                : 'border-[var(--border)] bg-white text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
             }`}
           >
             {CATEGORY_ICONS[cat.id]}
@@ -79,7 +79,7 @@ export function CategoryBar({ categories, locale }: CategoryBarProps) {
       <select
         value={currentSort}
         onChange={(e) => updateParam('sort', e.target.value)}
-        className="shrink-0 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text-secondary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+        className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-secondary)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt} value={opt}>

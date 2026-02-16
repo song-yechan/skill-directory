@@ -92,12 +92,12 @@ export function HeroSection({ allSkills = [] }: HeroSectionProps) {
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={t('searchPlaceholder')}
-            className="w-full rounded-xl bg-white py-3.5 pl-12 pr-4 text-base text-[var(--text-primary)] shadow-lg placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            className="w-full rounded-xl bg-[var(--bg-input)] py-3.5 pl-12 pr-4 text-base text-[var(--text-primary)] shadow-lg placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
 
           {/* Search preview dropdown */}
           {showDropdown && previewResults.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl bg-white shadow-xl">
+            <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl bg-[var(--bg-card)] shadow-xl" style={{ boxShadow: 'var(--shadow-dropdown)' }}>
               {previewResults.map((skill) => (
                 <Link
                   key={skill.slug}
