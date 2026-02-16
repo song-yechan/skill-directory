@@ -272,42 +272,40 @@ export default async function SkillPage({ params }: SkillPageProps) {
           </div>
 
           {/* Stats card */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-amber-500">
-                  <Star className="h-3.5 w-3.5" />
-                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
-                    {skill.stars.toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('stars')}</p>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                <Star className="h-4 w-4 text-amber-500" />
+                <span className="text-sm">{t('stars')}</span>
               </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-[var(--accent)]">
-                  <Download className="h-3.5 w-3.5" />
-                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
-                    {skill.install_count.toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('installs')}</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-[var(--text-tertiary)]">
-                  <Eye className="h-3.5 w-3.5" />
-                  <span className="text-base font-bold tabular-nums text-[var(--text-primary)]">
-                    {skill.view_count.toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">{t('views')}</p>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center justify-center gap-1.5 border-t border-[var(--border)] pt-3 text-[var(--text-tertiary)]">
-              <Calendar className="h-3.5 w-3.5" />
-              <span className="text-xs">
-                {t('createdAt')}:
+              <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">
+                {skill.stars.toLocaleString()}
               </span>
-              <span className="text-xs font-medium text-[var(--text-secondary)]">
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                <Download className="h-4 w-4 text-[var(--accent)]" />
+                <span className="text-sm">{t('installs')}</span>
+              </div>
+              <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">
+                {skill.install_count.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                <Eye className="h-4 w-4" />
+                <span className="text-sm">{t('views')}</span>
+              </div>
+              <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">
+                {skill.view_count.toLocaleString()}
+              </span>
+            </div>
+            <div className="border-t border-[var(--border)] pt-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm">{t('createdAt')}</span>
+              </div>
+              <span className="text-sm font-medium text-[var(--text-primary)]">
                 {new Date(skill.github_created_at ?? skill.created_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', {
                   year: 'numeric',
                   month: 'short',
