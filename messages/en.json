@@ -2,7 +2,7 @@
   "common": {
     "siteName": "Claude Skill Directory",
     "search": "Search",
-    "login": "Sign in with GitHub",
+    "login": "Sign in with Google",
     "logout": "Sign out",
     "all": "All",
     "home": "Home",
@@ -65,7 +65,7 @@
     "howToUse": "Usage",
     "examples": "Examples",
     "viewReadme": "View original README",
-    "accountTooNew": "Your account must be at least 30 days old to vote",
+    "accountTooNew": "Your account must be at least 30 days old to vote.",
     "relatedSkills": "Related Skills"
   },
   "about": {
@@ -91,7 +91,7 @@
     "feature2Title": "Korean + English",
     "feature2Desc": "Full bilingual interface. Understand global skills regardless of language.",
     "feature3Title": "Community Voting",
-    "feature3Desc": "Sign in with GitHub to vote on skills. Only accounts older than 30 days can vote.",
+    "feature3Desc": "Sign in with Google to vote on skills. Only accounts older than 30 days can vote.",
     "feature4Title": "Real-time Stats",
     "feature4Desc": "Track views, installs, and votes in real time to quickly identify popular skills.",
     "ctaTitle": "Discover Skills",
