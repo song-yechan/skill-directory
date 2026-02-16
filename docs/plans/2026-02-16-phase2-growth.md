@@ -7,17 +7,19 @@
 ## A. 제품 완성도 (구현 우선순위순)
 
 ### A1. 데이터 품질 강화
-- [ ] seed 필터 재정비 — description/name에 "claude" 필수, MIN_STARS 조정
+- [x] seed 필터 재정비 — description/name에 "claude" 필수, MIN_STARS 조정
+- [x] 148개 스킬 enrichment 완료 (ko/en 설명, usage guide, summary, tags)
+- [x] name_ko 추가 — 한국어 이름 7개 분리 + locale별 렌더링
 - [ ] enrich 실패 스킬 재시도 로직 (Gemini 429 시 큐잉)
 - [ ] 수동 스킬 제출 폼 (GitHub URL 입력 → 관리자 승인)
 - [ ] 스킬별 스크린샷/데모 GIF 지원 (og:image 활용)
 
 ### A2. SEO & 메타데이터
-- [ ] 각 스킬 상세 페이지에 `generateMetadata` — title, description, og:image
-- [ ] sitemap.xml 자동 생성 (`app/sitemap.ts`)
-- [ ] robots.txt
-- [ ] JSON-LD 구조화 데이터 (SoftwareApplication schema)
-- [ ] 정적 빌드 최적화 — `generateStaticParams`로 인기 스킬 100개 사전 빌드
+- [x] 각 스킬 상세 페이지에 `generateMetadata` — title, description, og:image
+- [x] sitemap.xml 자동 생성 (`app/sitemap.ts`)
+- [x] robots.txt
+- [x] JSON-LD 구조화 데이터 (SoftwareApplication schema)
+- [x] 정적 빌드 최적화 — `generateStaticParams`로 인기 스킬 50개 사전 빌드
 
 ### A3. UX 개선
 - [ ] 스킬 상세 페이지 — 관련 스킬 추천 (같은 카테고리/태그 기반)
@@ -102,8 +104,10 @@
 ## C. 구현 로드맵
 
 ### Week 1-2: 기반 다지기
-- [ ] SEO 메타데이터 + sitemap + robots.txt
-- [ ] JSON-LD 구조화 데이터
+- [x] SEO 메타데이터 + sitemap + robots.txt
+- [x] JSON-LD 구조화 데이터
+- [x] 투표/설치 API 수정 (SECURITY DEFINER RPC + revalidatePath)
+- [x] 스킬 목록 클라이언트 사이드 필터링 (성능 개선)
 - [ ] README 정리 + .env.local.example 생성
 - [ ] Reddit/Discord/Twitter 첫 공유
 
