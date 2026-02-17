@@ -7,6 +7,11 @@ const headers = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+/** Strip PostgREST filter meta-characters to prevent filter injection */
+function sanitizeFilter(input: string): string {
+  return input.replace(/[,.()"{}\\]/g, '');
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q');
@@ -23,18 +28,19 @@ export async function GET(request: Request) {
     .select('id, slug, name, name_ko, summary_en, summary_ko, stars, good_count, bad_count, view_count, install_count, category_id, tags, github_url, updated_at');
 
   if (category) {
-    query = query.eq('category_id', category);
+    query = query.eq('category_id', sanitizeFilter(category));
   }
 
   if (q) {
-    const lower = q.toLowerCase();
+    const safe = sanitizeFilter(q);
+    const lower = safe.toLowerCase();
     query = query.or(
-      `name.ilike.%${q}%,name_ko.ilike.%${q}%,summary_en.ilike.%${q}%,summary_ko.ilike.%${q}%,description_en.ilike.%${q}%,description_ko.ilike.%${q}%,tags.cs.{${lower}}`
+      `name.ilike.%${safe}%,name_ko.ilike.%${safe}%,summary_en.ilike.%${safe}%,summary_ko.ilike.%${safe}%,description_en.ilike.%${safe}%,description_ko.ilike.%${safe}%,tags.cs.{${lower}}`
     );
   }
 
   if (tag) {
-    query = query.contains('tags', [tag]);
+    query = query.contains('tags', [sanitizeFilter(tag)]);
   }
 
   const sortMap: Record<string, string> = {
