@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
+import { createClient } from '@/lib/supabase/server';
+
+async function getAuthUser() {
+  try {
+    const authClient = await createClient();
+    const { data: { user } } = await authClient.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
+}
 
 /**
- * Anonymous voting via SECURITY DEFINER RPC.
- * Dedup is handled client-side via localStorage.
+ * Vote flow:
+ * - Logged in: insert/upsert into votes table (trigger auto-updates counts)
+ * - Not logged in: use adjust_vote_count RPC directly (localStorage dedup on client)
  */
 export async function POST(
   request: Request,
@@ -17,28 +29,55 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid vote type' }, { status: 400 });
   }
 
+  const user = await getAuthUser();
   const supabase = createPublicClient();
 
-  // If changing vote (e.g. good → bad), decrement previous
-  if (previous_vote && previous_vote !== vote_type) {
+  if (user) {
+    // Logged in: use votes table (triggers handle count updates)
+    const authClient = await createClient();
+
+    if (previous_vote && previous_vote !== vote_type) {
+      // Change vote: update existing record
+      const { error } = await authClient
+        .from('votes')
+        .update({ vote_type })
+        .eq('user_id', user.id)
+        .eq('skill_id', skillId);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    } else {
+      // New vote: insert
+      const { error } = await authClient
+        .from('votes')
+        .upsert({ user_id: user.id, skill_id: skillId, vote_type }, {
+          onConflict: 'user_id,skill_id',
+        });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+  } else {
+    // Not logged in: use RPC (existing behavior)
+    if (previous_vote && previous_vote !== vote_type) {
+      const { error } = await supabase.rpc('adjust_vote_count', {
+        p_skill_id: skillId,
+        p_vote_type: previous_vote,
+        p_delta: -1,
+      });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+
     const { error } = await supabase.rpc('adjust_vote_count', {
       p_skill_id: skillId,
-      p_vote_type: previous_vote,
-      p_delta: -1,
+      p_vote_type: vote_type,
+      p_delta: 1,
     });
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-  }
-
-  // Increment new vote
-  const { error } = await supabase.rpc('adjust_vote_count', {
-    p_skill_id: skillId,
-    p_vote_type: vote_type,
-    p_delta: 1,
-  });
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   revalidatePath('/[locale]', 'page');
@@ -57,14 +96,30 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid vote type' }, { status: 400 });
   }
 
+  const user = await getAuthUser();
   const supabase = createPublicClient();
-  const { error } = await supabase.rpc('adjust_vote_count', {
-    p_skill_id: skillId,
-    p_vote_type: vote_type,
-    p_delta: -1,
-  });
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+  if (user) {
+    // Logged in: delete from votes table (trigger handles count)
+    const authClient = await createClient();
+    const { error } = await authClient
+      .from('votes')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('skill_id', skillId);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  } else {
+    // Not logged in: use RPC
+    const { error } = await supabase.rpc('adjust_vote_count', {
+      p_skill_id: skillId,
+      p_vote_type: vote_type,
+      p_delta: -1,
+    });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   revalidatePath('/[locale]', 'page');

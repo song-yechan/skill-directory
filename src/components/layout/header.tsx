@@ -15,10 +15,12 @@ export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const tDashboard = useTranslations('dashboard');
   const navLinks = [
     { href: `/${locale}`, label: t('home'), exact: true },
     { href: `/${locale}/skills`, label: t('allSkills'), exact: false },
     { href: `/${locale}/discover`, label: t('discover'), exact: false },
+    { href: `/${locale}/dashboard`, label: tDashboard('nav'), exact: false },
     { href: `/${locale}/about`, label: t('about'), exact: false },
   ];
 
