@@ -22,7 +22,7 @@ Claude Code 스킬 AI-native 디렉토리. GitHub 자동 수집 + 커뮤니티 �
 | `categories` | id, name_ko, name_en, icon, sort_order | 6개 고정 |
 | `votes` | user_id (NOT NULL), skill_id, vote_type | 로그인 시 기록, 비로그인은 RPC only |
 | `installs` | skill_id, user_id (nullable), source | 로그인 시 user_id 기록 + trigger → install_count |
-| `skill_requests` | user_id, github_url, description, status | 스킬 제보 (pending/approved/rejected) |
+| `skill_requests` | user_id, github_url, description, status | 스킬 제보 (pending/approved/rejected), INSERT → pg_net → 이메일 알림 |
 | `api_rate_limits` | identifier(md5), endpoint, window_start, request_count | 쓰기 API rate limit |
 
 ### RPCs (SECURITY DEFINER — anon key로 호출 가능)
@@ -79,6 +79,7 @@ supabase db push  # linked project로 자동 적용
   - 미들웨어 (in-memory): GET 60req/min, POST/DELETE 20req/min per IP
   - Supabase RPC (`check_rate_limit`): vote 10/min, install 10/min per IP (DB-level atomic)
   - 429 응답: `{ error: "Too many requests" }` + `Retry-After` 헤더
+- **Webhook**: `POST /api/webhooks/skill-request` — Supabase pg_net 트리거 → Resend 이메일 알림 (skill_requests INSERT 시)
 
 ### Data Pipeline
 - `scripts/seed-skills.ts` — GitHub 수집 ("claude" 필수 필터)

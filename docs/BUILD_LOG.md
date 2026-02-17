@@ -6,6 +6,13 @@
 
 ## 2026-02-17
 
+### feat: 스킬 제보 이메일 알림 `3e8f737`
+- **Resend** 이메일 발송 (무료 100건/일) + `POST /api/webhooks/skill-request`
+- **pg_net 트리거**: `skill_requests` INSERT → webhook 자동 호출 (Supabase Dashboard 설정 불필요)
+- **보안**: webhook secret 검증 + escapeHtml XSS 방지
+- **신규 파일**: `src/app/api/webhooks/skill-request/route.ts`, `supabase/migrations/009`
+- **Vercel 환경변수**: RESEND_API_KEY, WEBHOOK_SECRET, ADMIN_EMAIL
+
 ### chore: 신규 스킬 10개 DB 추가 (총 188개)
 - 웹 리서치 → 22개 후보 중 15개 선별, 5개 기존 중복 제외 → 10개 신규 삽입
 - Context Engineering Kit (NeoLabHQ), Cloudflare Skills (jezweb), Skill Factory (alirezarezvani)
