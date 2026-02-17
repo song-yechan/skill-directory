@@ -6,6 +6,13 @@
 
 ## 2026-02-17
 
+### feat: /find-skill 스마트 추천 + 구분선 출력 형식 확정
+- 환경 분석: 설치된 스킬 스캔 + CLAUDE.md/package.json 기반 프로젝트 컨텍스트 감지
+- 4단계 필터링: 설치 제외 → 검색어 오탐 제거 → 프로젝트 컨텍스트 필터 → 관련성 정렬
+- 구분선 카드 형식 출력 확정 (이름+설명+추천사유)
+- API 보안: `sanitizeFilter()` PostgREST filter injection 방지 `2b69717`
+- API 검색: tags 필드 포함 (`tags.cs.{lower}`) `73b939a`
+
 ### refactor: CATEGORY_LABELS/COLORS 공유 상수 추출 `410add7`
 - `src/lib/constants.ts` 생성 — `CATEGORY_LABELS`, `CATEGORY_COLORS` 중앙화
 - 4개 파일(skill-card, my-skills-list, usage-pattern, dashboard-summary) import 전환
