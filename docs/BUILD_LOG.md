@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-02-17
+
+### refactor: CATEGORY_LABELS/COLORS 공유 상수 추출 `410add7`
+- `src/lib/constants.ts` 생성 — `CATEGORY_LABELS`, `CATEGORY_COLORS` 중앙화
+- 4개 파일(skill-card, my-skills-list, usage-pattern, dashboard-summary) import 전환
+
+### chore: 신규 스킬 19개 DB 추가 + /find-skill 강화
+- 웹 리서치 → 25개 후보 중 19개 신규 삽입 (총 178개)
+- 공식 벤더(Supabase, Vercel, DigitalOcean), 보안(Trail of Bits, SecOps), 게임엔진(Godot, Unreal, Unity) 등
+- `/find-skill` SKILL.md 가독성 개선 — 목적/사용법/설치 워크플로우 재구성
+- T6(npm CLI) → AI-native 전환: SKILL.md 기반 검색+설치 (CLI 불필요)
+- `scripts/add-new-skills.ts` 시드 스크립트 추가
+
+---
+
 ## 2026-02-16
 
 ### feat: 실시간 검색 + 관련 스킬 + API 개선 `9f8db0b`

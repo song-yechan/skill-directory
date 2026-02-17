@@ -1,6 +1,6 @@
 # Phase 2: Growth & Distribution Plan
 
-> **현재 상태**: Phase 1 완료 + A1/A2 완료 + Sprint 1 완료 (검색/관련스킬/API). 다크모드/반응형부터 진행.
+> **현재 상태**: Phase 1 완료 + A1/A2 완료 + Sprint 1-2 완료. 대시보드 완료. 마케팅 Phase 1 대기.
 > **Compact 후 복구**: 이 파일의 맨 아래 "Resume Prompt" 섹션을 그대로 붙여넣기.
 
 ---
@@ -103,7 +103,7 @@
 - [x] OG Image (next/og edge)
 - [x] GitHub topics 추가
 - [x] 마케팅 플랜 작성 (`docs/plans/2026-02-16-marketing-plan.md`)
-- [ ] T6. npm CLI 패키지
+- [x] T6. ~~npm CLI 패키지~~ → `/find-skill` 스킬 강화 (AI-native 전환)
 - [ ] Reddit/Discord/Twitter 첫 공유
 
 ### Sprint 3: 런칭 & 성장

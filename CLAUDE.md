@@ -66,6 +66,7 @@ supabase db push  # linked project로 자동 적용
 - `SkillCard` — 스킬 카드 (name_ko fallback 포함)
 - `VoteButton` / `InstallCommand` — RPC 호출 + localStorage 중복 방지. 로그인 시 votes/installs 테이블에 user_id 자동 기록
 - `useDebounce` — `src/hooks/use-debounce.ts` 공용 debounce 훅
+- `CATEGORY_LABELS` / `CATEGORY_COLORS` — `src/lib/constants.ts` 공유 상수 (4개 컴포넌트에서 import)
 
 ### API
 - `GET /api/skills` — 공개 REST API (CORS 지원)
@@ -107,7 +108,7 @@ supabase db push  # linked project로 자동 적용
 
 ## Progress
 - **Phase 1**: 완료 (`docs/plans/2026-02-15-skill-directory-design.md`)
-- **Phase 2**: A1/A2 완료, Sprint 1-2 완료 (다크모드+반응형+OG+마케팅플랜), **대시보드 완료** → `docs/plans/2026-02-17-user-dashboard.md`
+- **Phase 2**: A1/A2 완료, Sprint 1-2 완료, **대시보드 완료**, `/find-skill` 스킬 강화 (AI-native), 178개 스킬 → `docs/plans/2026-02-17-user-dashboard.md`
 - **마케팅**: Phase 0 완료, Phase 1 (커뮤니티 시딩) 대기 → `docs/plans/2026-02-16-marketing-plan.md`
 
 ## Documentation Maintenance
