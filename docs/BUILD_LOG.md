@@ -6,6 +6,13 @@
 
 ## 2026-02-17
 
+### feat: API rate limiting — 하이브리드 방어
+- **미들웨어**: `/api/*` matcher 추가, GET 60req/min, POST/DELETE 20req/min (in-memory fixed window)
+- **Supabase RPC**: `check_rate_limit()` — vote 10req/min, install 10req/min (DB-level atomic)
+- **신규 파일**: `src/lib/rate-limit.ts`, `supabase/migrations/007_rate_limits.sql`
+- **수정**: `middleware.ts` (API 분기), `vote/route.ts`, `install/route.ts` (RPC 체크)
+- **버그 수정**: install source 검증에 `'find-skill'` 누락 → 추가
+
 ### feat: /find-skill 스마트 추천 + 구분선 출력 형식 확정
 - 환경 분석: 설치된 스킬 스캔 + CLAUDE.md/package.json 기반 프로젝트 컨텍스트 감지
 - 4단계 필터링: 설치 제외 → 검색어 오탐 제거 → 프로젝트 컨텍스트 필터 → 관련성 정렬

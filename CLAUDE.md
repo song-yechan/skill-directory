@@ -23,12 +23,14 @@ Claude Code 스킬 AI-native 디렉토리. GitHub 자동 수집 + 커뮤니티 �
 | `votes` | user_id (NOT NULL), skill_id, vote_type | 로그인 시 기록, 비로그인은 RPC only |
 | `installs` | skill_id, user_id (nullable), source | 로그인 시 user_id 기록 + trigger → install_count |
 | `skill_requests` | user_id, github_url, description, status | 스킬 제보 (pending/approved/rejected) |
+| `api_rate_limits` | identifier(md5), endpoint, window_start, request_count | 쓰기 API rate limit |
 
 ### RPCs (SECURITY DEFINER — anon key로 호출 가능)
 - `adjust_vote_count(p_skill_id, p_vote_type, p_delta)` — 원자적 투표 증감 (비로그인용)
 - `track_install(p_skill_id, p_source, p_user_id?)` — 설치 기록 + 카운트 (로그인 시 중복 방지)
 - `increment_view(p_skill_id)` — 뷰 카운트
 - `get_user_dashboard(p_user_id)` — 대시보드 데이터 (installs + votes + requests)
+- `check_rate_limit(p_identifier, p_endpoint, p_limit, p_window_seconds)` — 쓰기 엔드포인트 rate limit (atomic upsert)
 
 ### Migration
 ```bash
@@ -73,6 +75,10 @@ supabase db push  # linked project로 자동 적용
   - 파라미터: `q`, `category`, `tag`, `sort`, `limit`, `offset`
   - 검색 대상: name, name_ko, summary_ko/en, description_ko/en
   - 정렬: stars, good, installs, views, recent
+- **Rate Limiting** (하이브리드):
+  - 미들웨어 (in-memory): GET 60req/min, POST/DELETE 20req/min per IP
+  - Supabase RPC (`check_rate_limit`): vote 10/min, install 10/min per IP (DB-level atomic)
+  - 429 응답: `{ error: "Too many requests" }` + `Retry-After` 헤더
 
 ### Data Pipeline
 - `scripts/seed-skills.ts` — GitHub 수집 ("claude" 필수 필터)

@@ -2,6 +2,26 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
+import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/ip';
+
+async function checkWriteRateLimit(ip: string): Promise<NextResponse | null> {
+  const supabase = createPublicClient();
+  const { data: allowed, error } = await supabase.rpc('check_rate_limit', {
+    p_identifier: ip,
+    p_endpoint: 'vote',
+    p_limit: 10,
+    p_window_seconds: 60,
+  });
+
+  if (error || allowed === false) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+  return null;
+}
 
 async function getAuthUser() {
   try {
@@ -22,6 +42,11 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const hdrs = await headers();
+  const ip = getClientIp(hdrs);
+  const rateLimited = await checkWriteRateLimit(ip);
+  if (rateLimited) return rateLimited;
+
   const { id: skillId } = await params;
   const { vote_type, previous_vote } = await request.json();
 
@@ -89,6 +114,11 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const hdrs = await headers();
+  const ip = getClientIp(hdrs);
+  const rateLimited = await checkWriteRateLimit(ip);
+  if (rateLimited) return rateLimited;
+
   const { id: skillId } = await params;
   const { vote_type } = await request.json();
 
