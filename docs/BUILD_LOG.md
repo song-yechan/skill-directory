@@ -6,6 +6,12 @@
 
 ## 2026-02-17
 
+### chore: 신규 스킬 10개 DB 추가 (총 188개)
+- 웹 리서치 → 22개 후보 중 15개 선별, 5개 기존 중복 제외 → 10개 신규 삽입
+- Context Engineering Kit (NeoLabHQ), Cloudflare Skills (jezweb), Skill Factory (alirezarezvani)
+- Token-Optimized Marketplace (mhattingpete), 100 Agents (lodetomasi), PaaS Skills (oaustegard)
+- FeatBit Feature Flags, PICT Combinatorial Testing, Local Marketplace (dashed), Skills Lab (panaversity)
+
 ### feat: API rate limiting — 하이브리드 방어 `d87912d`
 - **미들웨어**: `/api/*` matcher 추가, GET 60req/min, POST/DELETE 20req/min (in-memory fixed window)
 - **Supabase RPC**: `check_rate_limit()` — vote 10req/min, install 10req/min (DB-level atomic)
