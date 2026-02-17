@@ -27,8 +27,9 @@ export async function GET(request: Request) {
   }
 
   if (q) {
+    const lower = q.toLowerCase();
     query = query.or(
-      `name.ilike.%${q}%,name_ko.ilike.%${q}%,summary_en.ilike.%${q}%,summary_ko.ilike.%${q}%,description_en.ilike.%${q}%,description_ko.ilike.%${q}%`
+      `name.ilike.%${q}%,name_ko.ilike.%${q}%,summary_en.ilike.%${q}%,summary_ko.ilike.%${q}%,description_en.ilike.%${q}%,description_ko.ilike.%${q}%,tags.cs.{${lower}}`
     );
   }
 
