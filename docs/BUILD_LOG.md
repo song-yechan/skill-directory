@@ -6,10 +6,12 @@
 
 ## 2026-02-17
 
-### feat: API rate limiting — 하이브리드 방어
+### feat: API rate limiting — 하이브리드 방어 `d87912d`
 - **미들웨어**: `/api/*` matcher 추가, GET 60req/min, POST/DELETE 20req/min (in-memory fixed window)
 - **Supabase RPC**: `check_rate_limit()` — vote 10req/min, install 10req/min (DB-level atomic)
-- **신규 파일**: `src/lib/rate-limit.ts`, `supabase/migrations/007_rate_limits.sql`
+- **IP 보안**: `x-real-ip` 우선 (Vercel, 위조 불가) + 공유 유틸 `src/lib/ip.ts`
+- **RLS**: `api_rate_limits` 테이블 직접 접근 차단, 함수 실행 권한만 부여
+- **신규 파일**: `src/lib/rate-limit.ts`, `src/lib/ip.ts`, `supabase/migrations/007-008`
 - **수정**: `middleware.ts` (API 분기), `vote/route.ts`, `install/route.ts` (RPC 체크)
 - **버그 수정**: install source 검증에 `'find-skill'` 누락 → 추가
 
