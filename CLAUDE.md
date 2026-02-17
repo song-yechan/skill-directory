@@ -20,13 +20,15 @@ Claude Code 스킬 AI-native 디렉토리. GitHub 자동 수집 + 커뮤니티 �
 |--------|----------|------|
 | `skills` | id, slug, name, name_ko, description_ko/en, summary_ko/en, usage_guide/en, category_id, tags[], stars, view/install/good/bad_count, *_snapshot | 메인 테이블 |
 | `categories` | id, name_ko, name_en, icon, sort_order | 6개 고정 |
-| `votes` | user_id (NOT NULL), skill_id, vote_type | 현재 미사용 (익명 투표는 RPC) |
-| `installs` | skill_id, user_id (nullable), source | trigger → install_count 증가 |
+| `votes` | user_id (NOT NULL), skill_id, vote_type | 로그인 시 기록, 비로그인은 RPC only |
+| `installs` | skill_id, user_id (nullable), source | 로그인 시 user_id 기록 + trigger → install_count |
+| `skill_requests` | user_id, github_url, description, status | 스킬 제보 (pending/approved/rejected) |
 
 ### RPCs (SECURITY DEFINER — anon key로 호출 가능)
-- `adjust_vote_count(p_skill_id, p_vote_type, p_delta)` — 원자적 투표 증감
-- `track_install(p_skill_id, p_source)` — 설치 기록 + 카운트
+- `adjust_vote_count(p_skill_id, p_vote_type, p_delta)` — 원자적 투표 증감 (비로그인용)
+- `track_install(p_skill_id, p_source, p_user_id?)` — 설치 기록 + 카운트 (로그인 시 중복 방지)
 - `increment_view(p_skill_id)` — 뷰 카운트
+- `get_user_dashboard(p_user_id)` — 대시보드 데이터 (installs + votes + requests)
 
 ### Migration
 ```bash
@@ -42,6 +44,7 @@ supabase db push  # linked project로 자동 적용
 | `/[locale]/skills` | 전체 스킬 (클라이언트 필터/정렬) | SSG + ISR 60s |
 | `/[locale]/skills/[slug]` | 스킬 상세 + 관련 스킬 4개 | SSG (top 50) + ISR |
 | `/[locale]/discover` | New/Trending 탭 | Dynamic |
+| `/[locale]/dashboard` | 사용자 대시보드 (설치/투표/제보) | Dynamic |
 | `/[locale]/about` | 소개 | Static |
 
 ### Supabase Clients
@@ -61,7 +64,7 @@ supabase db push  # linked project로 자동 적용
 - `SkillsListClient` — 실시간 debounce 검색 (300ms) + 카테고리/태그/정렬 통합 + 빈 결과 시 인기 태그 추천
 - `HeroSection` — Hero 검색 + 드롭다운 프리뷰 (200ms debounce, 상위 5개)
 - `SkillCard` — 스킬 카드 (name_ko fallback 포함)
-- `VoteButton` / `InstallCommand` — RPC 호출 + response.ok 검증 + localStorage 중복 방지
+- `VoteButton` / `InstallCommand` — RPC 호출 + localStorage 중복 방지. 로그인 시 votes/installs 테이블에 user_id 자동 기록
 - `useDebounce` — `src/hooks/use-debounce.ts` 공용 debounce 훅
 
 ### API
@@ -82,7 +85,7 @@ supabase db push  # linked project로 자동 적용
 
 ### i18n
 - 메시지: `messages/ko.json`, `messages/en.json` — 새 텍스트 추가 시 **반드시 양쪽 다**
-- 네임스페이스: `common`, `home`, `allSkills`, `discover`, `detail`, `about`, `metadata`, `skill`
+- 네임스페이스: `common`, `home`, `allSkills`, `discover`, `detail`, `about`, `metadata`, `skill`, `dashboard`
 - DB i18n 패턴: `locale === 'ko' ? skill.name_ko ?? skill.name : skill.name`
 
 ### SEO
@@ -104,7 +107,8 @@ supabase db push  # linked project로 자동 적용
 
 ## Progress
 - **Phase 1**: 완료 (`docs/plans/2026-02-15-skill-directory-design.md`)
-- **Phase 2**: A1/A2 완료, Sprint 1 (검색+관련스킬+API) 완료, **다크모드/반응형부터 진행** → `docs/plans/2026-02-16-phase2-growth.md`
+- **Phase 2**: A1/A2 완료, Sprint 1-2 완료 (다크모드+반응형+OG+마케팅플랜), **대시보드 완료** → `docs/plans/2026-02-17-user-dashboard.md`
+- **마케팅**: Phase 0 완료, Phase 1 (커뮤니티 시딩) 대기 → `docs/plans/2026-02-16-marketing-plan.md`
 
 ## Documentation Maintenance
 매 작업 완료 시 아래 3개 파일 업데이트:

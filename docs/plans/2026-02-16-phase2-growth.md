@@ -98,8 +98,11 @@
 - [x] README 정리 + .env.local.example
 
 ### Sprint 2 (다음): 다크모드 + 반응형 + 런칭
-- [ ] T3. 다크 모드
-- [ ] T4. 반응형 개선
+- [x] T3. 다크 모드
+- [x] T4. 반응형 개선 (헤더 햄버거 + 상세 페이지 사이드바)
+- [x] OG Image (next/og edge)
+- [x] GitHub topics 추가
+- [x] 마케팅 플랜 작성 (`docs/plans/2026-02-16-marketing-plan.md`)
 - [ ] T6. npm CLI 패키지
 - [ ] Reddit/Discord/Twitter 첫 공유
 
