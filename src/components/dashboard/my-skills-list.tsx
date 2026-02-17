@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { Star, ThumbsUp, Download, ArrowRight } from 'lucide-react';
+import { CATEGORY_LABELS } from '@/lib/constants';
 
 interface InstalledSkill {
   readonly skill_id: string;
@@ -27,15 +28,6 @@ interface MySkillsListProps {
   readonly installs: readonly InstalledSkill[];
   readonly votes: readonly VotedSkill[];
 }
-
-const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
-  development: { ko: '개발', en: 'Development' },
-  testing: { ko: '테스트 & QA', en: 'Testing & QA' },
-  devops: { ko: 'DevOps & 인프라', en: 'DevOps & Infra' },
-  productivity: { ko: '생산성', en: 'Productivity' },
-  docs: { ko: '문서화', en: 'Documentation' },
-  other: { ko: '기타', en: 'Other' },
-};
 
 export function MySkillsList({ installs, votes }: MySkillsListProps) {
   const t = useTranslations('dashboard');
