@@ -108,7 +108,7 @@ supabase db push  # linked project로 자동 적용
 
 ## Progress
 - **Phase 1**: 완료 (`docs/plans/2026-02-15-skill-directory-design.md`)
-- **Phase 2**: A1/A2 완료, Sprint 1-2 완료, **대시보드 완료**, `/find-skill` 스킬 강화 (AI-native), 178개 스킬 → `docs/plans/2026-02-17-user-dashboard.md`
+- **Phase 2**: A1/A2 완료, Sprint 1-2 완료, **대시보드 완료**, `/find-skill` 스마트 추천 완료 (환경 분석 + 구분선 형식), 178개 스킬, API 보안(sanitizeFilter) → `docs/plans/2026-02-17-user-dashboard.md`
 - **마케팅**: Phase 0 완료, Phase 1 (커뮤니티 시딩) 대기 → `docs/plans/2026-02-16-marketing-plan.md`
 
 ## Documentation Maintenance
