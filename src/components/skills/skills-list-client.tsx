@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useDebounce } from '@/hooks/use-debounce';
 import { SkillCard } from './skill-card';
 import { Search, Tag, X, Code, FlaskConical, Server, Zap, FileText, Puzzle } from 'lucide-react';
-import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
+import { getPopularityScore, getTrendingScore, isTrendingEligible } from '@/lib/popularity';
 import { getSearchRelevance } from '@/lib/search';
 
 interface Skill {
@@ -135,6 +135,7 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
         result.sort((a, b) => getPopularityScore(b) - getPopularityScore(a));
         break;
       case 'trending':
+        result = result.filter(isTrendingEligible);
         result.sort((a, b) => getTrendingScore(b) - getTrendingScore(a));
         break;
       case 'stars':

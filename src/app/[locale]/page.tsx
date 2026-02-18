@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HeroSection } from '@/components/skills/hero-section';
 import { SkillCard } from '@/components/skills/skill-card';
 import { createPublicClient } from '@/lib/supabase/public';
-import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
+import { getPopularityScore, getTrendingScore, isTrendingEligible } from '@/lib/popularity';
 import Link from 'next/link';
 import { Flame, TrendingUp, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -39,8 +39,9 @@ export default async function HomePage({ params }: HomePageProps) {
     .sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
     .slice(0, 5);
 
-  // Trending: weekly delta from snapshot
+  // Trending: weekly delta from snapshot (only skills created within 60 days)
   const trending = [...skills]
+    .filter(isTrendingEligible)
     .sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
     .slice(0, 5);
 

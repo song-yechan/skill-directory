@@ -15,6 +15,16 @@ export function getPopularityScore(skill: {
   );
 }
 
+/** Trending cutoff: only skills created within this many days are eligible */
+export const TRENDING_CUTOFF_DAYS = 60;
+
+/** Check if a skill is eligible for trending (created within cutoff) */
+export function isTrendingEligible(skill: { created_at?: string }): boolean {
+  if (!skill.created_at) return false;
+  const daysSince = (Date.now() - new Date(skill.created_at).getTime()) / 86_400_000;
+  return daysSince <= TRENDING_CUTOFF_DAYS;
+}
+
 /** Weekly trending score: delta from last snapshot × recency boost */
 export function getTrendingScore(skill: {
   view_count: number;

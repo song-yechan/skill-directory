@@ -1,4 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
+import { TRENDING_CUTOFF_DAYS } from '@/lib/popularity';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const revalidate = 60;
@@ -33,9 +34,11 @@ export default async function DiscoverPage({ params, searchParams }: DiscoverPag
       .limit(30);
     skills = data;
   } else {
+    const cutoffDate = new Date(Date.now() - TRENDING_CUTOFF_DAYS * 86_400_000).toISOString();
     const { data } = await supabase
       .from('skills')
-      .select('*');
+      .select('*')
+      .gte('created_at', cutoffDate);
 
     const now = Date.now();
     const scored = (data ?? []).map((skill) => {
