@@ -15,7 +15,7 @@ export function getPopularityScore(skill: {
   );
 }
 
-/** Weekly trending score: delta from last snapshot */
+/** Weekly trending score: delta from last snapshot × recency boost */
 export function getTrendingScore(skill: {
   view_count: number;
   install_count: number;
@@ -23,9 +23,17 @@ export function getTrendingScore(skill: {
   view_count_snapshot: number;
   install_count_snapshot: number;
   good_count_snapshot: number;
+  created_at?: string;
 }): number {
   const viewDelta = skill.view_count - (skill.view_count_snapshot ?? 0);
   const installDelta = skill.install_count - (skill.install_count_snapshot ?? 0);
   const goodDelta = skill.good_count - (skill.good_count_snapshot ?? 0);
-  return viewDelta + installDelta * 5 + goodDelta * 10;
+  const delta = viewDelta + installDelta * 5 + goodDelta * 10;
+
+  // Recency boost: 1일=31x, 7일=5.3x, 30일=2x, 90일=1.3x
+  if (skill.created_at) {
+    const daysSince = Math.max((Date.now() - new Date(skill.created_at).getTime()) / 86_400_000, 1);
+    return delta * (1 + 30 / daysSince);
+  }
+  return delta;
 }

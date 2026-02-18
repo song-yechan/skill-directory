@@ -216,11 +216,11 @@ async function callGemini(readme: string, currentName: string): Promise<Enriched
 async function main() {
   console.log('=== Skill Enrichment — Gemini 2.5 Flash ===\n');
 
-  // Only enrich skills that haven't been enriched yet (no Korean description)
+  // Enrich skills missing description_ko (full) OR missing usage_guide (partial)
   const { data: skills, error } = await supabase
     .from('skills')
-    .select('id, slug, name, readme_raw, description_en')
-    .is('description_ko', null)
+    .select('id, slug, name, readme_raw, description_en, description_ko, usage_guide')
+    .or('description_ko.is.null,usage_guide.is.null')
     .order('stars', { ascending: false });
 
   if (error || !skills) {
@@ -241,7 +241,8 @@ async function main() {
       continue;
     }
 
-    process.stdout.write(`[${enriched + failed + 1}/${skills.length}] ${skill.slug}...`);
+    const mode = skill.description_ko && !skill.usage_guide ? 'usage' : 'full';
+    process.stdout.write(`[${enriched + failed + 1}/${skills.length}] ${skill.slug} (${mode})...`);
 
     const result = await callGemini(content, skill.name);
     if (!result) {
@@ -262,21 +263,30 @@ async function main() {
       : undefined;
     const tags = Array.isArray(result.tags) ? [...result.tags] : [];
 
+    // If description_ko already exists, only fill in missing usage_guide
+    const isPartialEnrich = !!skill.description_ko && !skill.usage_guide;
+    const updatePayload = isPartialEnrich
+      ? {
+          usage_guide: ensureString(result.usage_guide),
+          usage_guide_en: ensureString(result.usage_guide_en),
+        }
+      : {
+          name: ensureString(result.name) ?? skill.name,
+          description_en: ensureString(result.description_en),
+          description_ko: ensureString(result.description_ko),
+          summary_en: ensureString(result.summary_en),
+          summary_ko: ensureString(result.summary_ko),
+          usage_guide: ensureString(result.usage_guide),
+          usage_guide_en: ensureString(result.usage_guide_en),
+          install_guide: null,
+          examples: null,
+          tags,
+          ...(category ? { category_id: category } : {}),
+        };
+
     const { error: updateError } = await supabase
       .from('skills')
-      .update({
-        name: ensureString(result.name) ?? skill.name,
-        description_en: ensureString(result.description_en),
-        description_ko: ensureString(result.description_ko),
-        summary_en: ensureString(result.summary_en),
-        summary_ko: ensureString(result.summary_ko),
-        usage_guide: ensureString(result.usage_guide),
-        usage_guide_en: ensureString(result.usage_guide_en),
-        install_guide: null,
-        examples: null,
-        tags,
-        ...(category ? { category_id: category } : {}),
-      })
+      .update(updatePayload)
       .eq('id', skill.id);
 
     if (updateError) {

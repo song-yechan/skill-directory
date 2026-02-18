@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { useState, useMemo, useRef } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { getSearchRelevance } from '@/lib/search';
 
 interface HeroSkill {
   readonly slug: string;
@@ -36,15 +37,10 @@ export function HeroSection({ allSkills = [] }: HeroSectionProps) {
 
   const previewResults = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return [];
-    const q = debouncedQuery.toLowerCase();
     return allSkills
-      .filter((s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.name_ko?.toLowerCase().includes(q) ||
-        s.summary_en?.toLowerCase().includes(q) ||
-        s.summary_ko?.toLowerCase().includes(q) ||
-        s.tags?.some(tag => tag.toLowerCase().includes(q))
-      )
+      .map((s) => ({ ...s, relevance: getSearchRelevance(s, debouncedQuery) }))
+      .filter((s) => s.relevance > 0)
+      .sort((a, b) => b.relevance - a.relevance)
       .slice(0, 5);
   }, [debouncedQuery, allSkills]);
 

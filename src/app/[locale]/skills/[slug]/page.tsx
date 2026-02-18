@@ -44,7 +44,9 @@ export async function generateMetadata({ params }: SkillPageProps): Promise<Meta
   }
 
   const displayName = locale === 'ko' ? skill.name_ko ?? skill.name : skill.name;
-  const description = locale === 'ko' ? skill.description_ko : skill.description_en;
+  const description = locale === 'ko'
+    ? (skill.description_ko ?? skill.description_en)
+    : (skill.description_en ?? skill.description_ko);
   const title = `${displayName} — Claude Skill Hub`;
   const url = `https://skill-directory-livid.vercel.app/${locale}/skills/${slug}`;
 
@@ -116,7 +118,9 @@ export default async function SkillPage({ params }: SkillPageProps) {
     .slice(0, 4);
 
   const displayName = locale === 'ko' ? skill.name_ko ?? skill.name : skill.name;
-  const description = locale === 'ko' ? skill.description_ko : skill.description_en;
+  const description = locale === 'ko'
+    ? (skill.description_ko ?? skill.description_en)
+    : (skill.description_en ?? skill.description_ko);
   const categoryLabel = CATEGORY_LABELS[skill.category_id]?.[locale as 'ko' | 'en'] ?? skill.category_id;
   const installCommand = `claude skill install ${skill.slug}`;
   const isOfficial = skill.github_owner === 'anthropics';

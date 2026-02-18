@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-02-18
+
+### feat: 검색 품질 + Discover 정렬 + i18n fallback + 200 스킬 추가
+- **검색 relevance scoring**: `src/lib/search.ts` 신규 — 가중치 기반 (name 100 > tag 40 > summary 15 > description 5 + stars boost)
+- **Hero 검색 + Skills 목록**: relevance 정렬 적용, Map 기반 scoring
+- **Discover New 탭**: `stars >= 50` 품질 필터 추가
+- **Discover Trending 탭**: `good_count DESC` → snapshot delta 공식 (`Δviews + Δinstalls×5 + Δgood×10`)
+- **Trending recency boost**: `recencyMultiplier = 1 + 30/daysSinceCreation` (popularity.ts + discover page)
+- **i18n fallback**: description/summary에 `??` 양방향 fallback 추가 (skill-card, detail page)
+- **Enrich 스크립트**: usage_guide 부분 enrichment 지원 (`isPartialEnrich` 모드)
+- **신규 스킬 ~200개**: 188개 → 389개 (에이전트 병렬 리서치 + 삽입)
+
+---
+
 ## 2026-02-17
 
 ### feat: 스킬 제보 이메일 알림 `3e8f737`

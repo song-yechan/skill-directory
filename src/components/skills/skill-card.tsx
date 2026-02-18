@@ -25,7 +25,9 @@ interface SkillCardProps {
 export function SkillCard({ skill }: SkillCardProps) {
   const locale = useLocale();
   const t = useTranslations('categories');
-  const summary = locale === 'ko' ? skill.summary_ko : skill.summary_en;
+  const summary = locale === 'ko'
+    ? (skill.summary_ko ?? skill.summary_en)
+    : (skill.summary_en ?? skill.summary_ko);
   const categoryLabel = CATEGORY_LABELS[skill.category_id]?.[locale as 'ko' | 'en'] ?? skill.category_id;
 
   return (

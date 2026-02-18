@@ -63,9 +63,9 @@ supabase db push  # linked project로 자동 적용
 - **OAuth 작업 체크리스트**: ①콜백 URL (locale prefix 필수) ②미들웨어 세션 갱신 ③로그인 상태 UI
 
 ### Key Components
-- `SkillsListClient` — 실시간 debounce 검색 (300ms) + 카테고리/태그/정렬 통합 + 빈 결과 시 인기 태그 추천
-- `HeroSection` — Hero 검색 + 드롭다운 프리뷰 (200ms debounce, 상위 5개)
-- `SkillCard` — 스킬 카드 (name_ko fallback 포함)
+- `SkillsListClient` — 실시간 debounce 검색 (300ms) + relevance scoring + 카테고리/태그/정렬 통합 + 빈 결과 시 인기 태그 추천
+- `HeroSection` — Hero 검색 + 드롭다운 프리뷰 (200ms debounce, relevance scoring, 상위 5개)
+- `SkillCard` — 스킬 카드 (name_ko/summary_ko ?? fallback 포함)
 - `VoteButton` / `InstallCommand` — RPC 호출 + localStorage 중복 방지. 로그인 시 votes/installs 테이블에 user_id 자동 기록
 - `useDebounce` — `src/hooks/use-debounce.ts` 공용 debounce 훅
 - `CATEGORY_LABELS` / `CATEGORY_COLORS` — `src/lib/constants.ts` 공유 상수 (4개 컴포넌트에서 import)
@@ -83,18 +83,19 @@ supabase db push  # linked project로 자동 적용
 
 ### Data Pipeline
 - `scripts/seed-skills.ts` — GitHub 수집 ("claude" 필수 필터)
-- `scripts/enrich-skills.ts` — Gemini 2.5 Flash AI 보강 (ko/en)
+- `scripts/enrich-skills.ts` — Gemini 2.5 Flash AI 보강 (ko/en, usage_guide 부분 enrichment 지원)
 - `scripts/refresh-snapshots.ts` — 주간 스냅샷 (trending delta)
 - `.github/workflows/update-skills.yml` — 주간 cron (월 4AM KST)
 
-### Scoring
+### Scoring (`src/lib/popularity.ts`, `src/lib/search.ts`)
 - **Popularity**: `stars×0.01 + views×1 + installs×5 + good×10 - bad×10`
-- **Trending**: `Δviews + Δinstalls×5 + Δgood×10` (주간 snapshot delta)
+- **Trending**: `(Δviews + Δinstalls×5 + Δgood×10) × recencyBoost` — recencyBoost = `1 + 30/daysSinceCreation`
+- **Search Relevance**: name exact(100) > name contains(50) > tag exact(40) > tag partial(20) > summary(15) > description(5) + log10(stars)×2
 
 ### i18n
 - 메시지: `messages/ko.json`, `messages/en.json` — 새 텍스트 추가 시 **반드시 양쪽 다**
 - 네임스페이스: `common`, `home`, `allSkills`, `discover`, `detail`, `about`, `metadata`, `skill`, `dashboard`
-- DB i18n 패턴: `locale === 'ko' ? skill.name_ko ?? skill.name : skill.name`
+- DB i18n 패턴: `locale === 'ko' ? (skill.field_ko ?? skill.field_en) : (skill.field_en ?? skill.field_ko)` — **반드시 양방향 fallback**
 
 ### SEO
 - `generateMetadata` (홈, 목록, 상세) + `sitemap.ts` + `robots.ts` + JSON-LD + `generateStaticParams`
@@ -115,7 +116,7 @@ supabase db push  # linked project로 자동 적용
 
 ## Progress
 - **Phase 1**: 완료 (`docs/plans/2026-02-15-skill-directory-design.md`)
-- **Phase 2**: A1/A2 완료, Sprint 1-2 완료, **대시보드 완료**, `/find-skill` 스마트 추천 완료 (환경 분석 + 구분선 형식), 188개 스킬, API 보안(sanitizeFilter) → `docs/plans/2026-02-17-user-dashboard.md`
+- **Phase 2**: A1/A2 완료, Sprint 1-2 완료, **대시보드 완료**, `/find-skill` 스마트 추천 완료, **389개 스킬**, API 보안(sanitizeFilter), 검색 relevance scoring, Discover 정렬 수정, trending recency boost → `docs/plans/2026-02-17-user-dashboard.md`
 - **마케팅**: Phase 0 완료, Phase 1 (커뮤니티 시딩) 대기 → `docs/plans/2026-02-16-marketing-plan.md`
 
 ## Documentation Maintenance

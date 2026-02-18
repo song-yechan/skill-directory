@@ -7,6 +7,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { SkillCard } from './skill-card';
 import { Search, Tag, X, Code, FlaskConical, Server, Zap, FileText, Puzzle } from 'lucide-react';
 import { getPopularityScore, getTrendingScore } from '@/lib/popularity';
+import { getSearchRelevance } from '@/lib/search';
 
 interface Skill {
   readonly id: string;
@@ -25,6 +26,7 @@ interface Skill {
   readonly category_id: string;
   readonly tags: readonly string[];
   readonly updated_at: string;
+  readonly created_at: string;
   readonly view_count_snapshot: number;
   readonly install_count_snapshot: number;
   readonly good_count_snapshot: number;
@@ -110,22 +112,25 @@ export function SkillsListClient({ allSkills, categories }: SkillsListClientProp
       result = result.filter((s) => s.tags?.includes(activeTag));
     }
 
-    // Search filter
+    // Search filter with relevance scoring
+    let relevanceMap: ReadonlyMap<string, number> | null = null;
     if (debouncedQuery) {
-      const q = debouncedQuery.toLowerCase();
-      result = result.filter((s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.name_ko?.toLowerCase().includes(q) ||
-        s.description_en?.toLowerCase().includes(q) ||
-        s.description_ko?.toLowerCase().includes(q) ||
-        s.summary_en?.toLowerCase().includes(q) ||
-        s.summary_ko?.toLowerCase().includes(q) ||
-        s.tags?.some(tag => tag.toLowerCase().includes(q))
-      );
+      const scored = new Map<string, number>();
+      result = result.filter((s) => {
+        const score = getSearchRelevance(s, debouncedQuery);
+        if (score > 0) {
+          scored.set(s.id, score);
+          return true;
+        }
+        return false;
+      });
+      relevanceMap = scored;
     }
 
-    // Sort
-    switch (sort) {
+    // Sort — when searching with default sort, use relevance
+    if (relevanceMap && sort === 'stars') {
+      result.sort((a, b) => (relevanceMap.get(b.id) ?? 0) - (relevanceMap.get(a.id) ?? 0));
+    } else switch (sort) {
       case 'popular':
         result.sort((a, b) => getPopularityScore(b) - getPopularityScore(a));
         break;

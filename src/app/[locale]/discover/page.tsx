@@ -20,15 +20,41 @@ export default async function DiscoverPage({ params, searchParams }: DiscoverPag
 
   const isNew = tab === 'new';
 
-  // New: sorted by created_at desc
-  // Trending: weighted score (good * 3 + install * 2 + views)
-  const sortColumn = isNew ? 'created_at' : 'good_count';
+  // New: created_at DESC, stars >= 50 quality filter
+  // Trending: snapshot delta score (Δviews + Δinstalls×5 + Δgood×10), top 30
+  let skills;
 
-  const { data: skills } = await supabase
-    .from('skills')
-    .select('*')
-    .order(sortColumn, { ascending: false })
-    .limit(30);
+  if (isNew) {
+    const { data } = await supabase
+      .from('skills')
+      .select('*')
+      .gte('stars', 50)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    skills = data;
+  } else {
+    const { data } = await supabase
+      .from('skills')
+      .select('*');
+
+    const now = Date.now();
+    const scored = (data ?? []).map((skill) => {
+      const delta =
+        (skill.view_count - skill.view_count_snapshot) +
+        (skill.install_count - skill.install_count_snapshot) * 5 +
+        (skill.good_count - skill.good_count_snapshot) * 10;
+
+      // Recency boost: newer skills get higher multiplier
+      const createdAt = new Date(skill.created_at).getTime();
+      const daysSinceCreation = Math.max((now - createdAt) / 86_400_000, 1);
+      const recencyMultiplier = 1 + (30 / daysSinceCreation); // 1일=31x, 7일=5.3x, 30일=2x, 90일=1.3x
+
+      return { ...skill, trending_score: delta * recencyMultiplier };
+    });
+
+    scored.sort((a, b) => b.trending_score - a.trending_score);
+    skills = scored.slice(0, 30);
+  }
 
   // GitHub 레포 생성 14일 이내 = New
   const fourteenDaysAgo = new Date();
